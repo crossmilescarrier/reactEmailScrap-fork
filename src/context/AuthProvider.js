@@ -4,9 +4,7 @@
 import { createContext, useState } from "react";
 import { toast } from "react-hot-toast";
 export const UserContext = createContext(); 
-
 export default function UserContextProvider(props) {
-  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [company, setcompany] = useState(null);
