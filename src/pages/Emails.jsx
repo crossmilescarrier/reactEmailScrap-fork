@@ -1,5 +1,5 @@
 import React from 'react'
-import data from '../pages/data.json'
+import data from '../pages/data3.json'
 import data2 from '../pages/data2.json'
 export default function Emails() {
   console.log(data);
