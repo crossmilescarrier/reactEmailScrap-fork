@@ -5,7 +5,7 @@ export default function Logo({size, black}) {
   return (
     <div className='logo'>
        <Link to="/" className={`drunk ${size ? size : 'text-xl md:text-3xl'} font-mona font-bold text-center text-main`}>
-          <Logotext black={black} />
+          <Logotext />
         </Link> 
     </div>
   )

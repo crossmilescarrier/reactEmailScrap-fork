@@ -5,6 +5,9 @@ import UserContextProvider from './context/AuthProvider';
 import Error404 from './404';
 import Login from './pages/auth/LogIn';
 import Emails from './pages/Emails';
+import Chats from './pages/Chats';
+import AllAccounts from './pages/emails/AllAccounts';
+import ThreadsLists from './pages/emails/ThreadsLists';
 
 
 function App() {
@@ -16,8 +19,11 @@ function App() {
                   <Routes>
                     {/* Public routes */}
                     {/* <Route path="/login" element={<Login />} /> */}
-                    <Route path="/" element={<Emails />} />
-                    <Route path="*" element={<Error404 />} /> 
+                    <Route path="/" element={<AllAccounts />} />
+                    <Route path="/account/naveen@crossmilescarrier.com" element={<ThreadsLists />} />
+                    <Route path="/chats" element={<Chats />} />
+                    <Route path="/emails" element={<Emails />} />
+                    <Route path="*" element={<Error404 />} />
                   </Routes>
                 </div>
               </BrowserRouter>

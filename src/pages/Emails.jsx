@@ -1,10 +1,9 @@
 import React from 'react'
-import data from '../pages/data3.json'
-import data2 from '../pages/data2.json'
+import data from '../pages/sent.json'
+import data2 from '../pages/inbox.json'
 export default function Emails() {
   console.log(data);
-    
-
+  console.log(data2);
       
   return (
     <div className='text-white'>
