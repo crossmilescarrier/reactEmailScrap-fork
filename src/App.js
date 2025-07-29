@@ -8,6 +8,7 @@ import Emails from './pages/Emails';
 import Chats from './pages/Chats';
 import AllAccounts from './pages/emails/AllAccounts';
 import ThreadsLists from './pages/emails/ThreadsLists';
+import EmailContainer from './pages/emails/EmailContainer';
 
 
 function App() {
@@ -20,9 +21,10 @@ function App() {
                     {/* Public routes */}
                     {/* <Route path="/login" element={<Login />} /> */}
                     <Route path="/" element={<AllAccounts />} />
-                    <Route path="/account/naveen@crossmilescarrier.com" element={<ThreadsLists />} />
-                    <Route path="/chats" element={<Chats />} />
+                    <Route path="/account/naveen@crossmilescarrier.com/emails" element={<ThreadsLists />} />
                     <Route path="/emails" element={<Emails />} />
+                    <Route path="/:account/email/:id" element={<EmailContainer />} />
+                    <Route path="/chats" element={<Chats />} />
                     <Route path="*" element={<Error404 />} />
                   </Routes>
                 </div>

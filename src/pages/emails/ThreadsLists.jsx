@@ -43,7 +43,7 @@ export default function ThreadsLists() {
          <p>Account : naveen@crossmilescarrier.com</p>
 
          <div className="space-y-3 pt-6">
-            {threads.map((thread) => (
+            {threads.map((thread) => ( 
                <ThreadItem key={thread.id} thread={thread} />
             ))}
          </div>
