@@ -6,9 +6,11 @@ import Error404 from './404';
 import Login from './pages/auth/LogIn';
 import Emails from './pages/Emails';
 import Chats from './pages/Chats';
-import AllAccounts from './pages/emails/AllAccounts';
-import ThreadsLists from './pages/emails/ThreadsLists';
+import AllAccounts from './pages/account/AllAccounts';
+import ThreadsLists from './pages/thread/ThreadsLists';
 import EmailContainer from './pages/emails/EmailContainer';
+import Unauthorized from './components/Unauthorized';
+import PrivateRoute from './components/PrivateRoute';
 
 
 function App() {
@@ -18,13 +20,39 @@ function App() {
               <BrowserRouter>
                 <div className="routes">
                   <Routes>
-                    {/* Public routes */}
-                    {/* <Route path="/login" element={<Login />} /> */}
                     <Route path="/" element={<AllAccounts />} />
-                    <Route path="/account/naveen@crossmilescarrier.com/emails" element={<ThreadsLists />} />
-                    <Route path="/emails" element={<Emails />} />
-                    <Route path="/:account/email/:id" element={<EmailContainer />} />
-                    <Route path="/chats" element={<Chats />} />
+                      <Route path="/unauthorized" element={<Unauthorized />} />
+                    <Route path="/login" element={<Login />} />
+                     
+                      <Route path="/home" element={
+                        <PrivateRoute>
+                          <AllAccounts />
+                        </PrivateRoute>
+                      } />
+
+                      <Route path="/account/naveen@crossmilescarrier.com/emails" element={
+                        <PrivateRoute>
+                          <ThreadsLists />
+                       </PrivateRoute>
+                      } />
+
+                      <Route path="/emails" element={
+                        <PrivateRoute>
+                          <Emails />
+                        </PrivateRoute>
+                      } />
+                      <Route path="/:account/email/:id" element={
+                        <PrivateRoute>
+                          <EmailContainer />
+                        </PrivateRoute>
+                      } />
+
+                      <Route path="/chats" element={
+                        <PrivateRoute>
+                          <Chats />
+                        </PrivateRoute>
+                      } />
+
                     <Route path="*" element={<Error404 />} />
                   </Routes>
                 </div>

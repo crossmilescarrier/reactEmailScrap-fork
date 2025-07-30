@@ -2,19 +2,9 @@ import * as React from "react";
 import CheckLogin from "../pages/auth/CheckLogin";
 import Logo from "../pages/common/Logo";
 import { UserContext } from "../context/AuthProvider";
-import TimeCounter from "../pages/common/TimeCounter";
 import {Helmet} from "react-helmet";
-import Sidebar from "./Sidebar";
-import { TbUserSquareRounded } from "react-icons/tb";
-import { TbLogout } from "react-icons/tb";
- import { HiOutlineUserCircle } from "react-icons/hi2";
- import { RiMailSendFill } from "react-icons/ri";
-
-import { RiMailSendLine } from "react-icons/ri";
-import { Link } from "react-router-dom";
-import { BsChatSquareDotsFill } from "react-icons/bs";
-import { IoMdAdd } from "react-icons/io";
 import { MdOutlineLogout } from "react-icons/md";
+import AddAccount from "../pages/account/AddAccount";
 
 
 export default function AuthLayout({children, heading}) {
@@ -44,18 +34,7 @@ export default function AuthLayout({children, heading}) {
     Sidebar.classList.toggle("open");
     setToggle(!toggle);
   }
-
-  const roleChecker = () =>{
-    if(user?.role === 1){
-      return user?.position ||'Employee'
-    }
-    else if(user?.role === 2){
-      return user?.position ||'Accountant'
-    }
-    else if(user?.role === 3){
-      return user?.position ||'Adminstrator'
-    }
-  }
+   
   return (
     <>
       <Helmet>
@@ -74,10 +53,9 @@ export default function AuthLayout({children, heading}) {
                 <Link to="/chats" className="text-black text-2xl hover:text-blue-600 flex items-center font-bold">
                   <BsChatSquareDotsFill /><span className="ms-2 uppercase">Chats</span>
                 </Link> */}
-                <button className='btn btn-primary flex items-center'>
-                  <IoMdAdd className="me-2" size={20}/> Add New Email
-                </button>
-                <button className='cursor-pointer text-black text-2xl hover:text-blue-600 flex items-center font-bold' onClick={showSidebar}>
+                 
+                <AddAccount classes="btn btn-primary flex items-center" text="Add New Account"  />
+                <button onClick={logout} className='cursor-pointer text-black text-2xl hover:text-blue-600 flex items-center font-bold'  >
                   <MdOutlineLogout  className='me-2 cursor-pointer' size={'2.3rem'} />
                 </button>
               </div>
@@ -87,7 +65,7 @@ export default function AuthLayout({children, heading}) {
             <div className="container py-12">
               {children}  
             </div>
-            {/* <CheckLogin takeaction={true} /> */}
+            <CheckLogin />
           </div>
     </>
   );

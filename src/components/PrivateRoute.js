@@ -5,7 +5,6 @@ import { UserContext } from '../context/AuthProvider';
 const PrivateRoute = ({ children, requiredPermission = null, requiredRole = null }) => {
   const { isAuthenticated, user, loading } = useContext(UserContext);
 
-  // Show loading while checking authentication status
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">

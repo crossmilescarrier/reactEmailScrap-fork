@@ -43,13 +43,13 @@ export default function Popup({btnclasses, iconcolor, btntext, size, children, s
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className={` transform overflow-hidden rounded-[35px] ${bg ? bg : "bg-white"} text-left shadow-xl transition-all sm:my-8 w-full md:w-full ${size ? size : 'md:max-w-lg'} ${space}`}>
+              <Dialog.Panel className={` transform overflow-hidden rounded-[35px] bg-white text-left shadow-xl transition-all sm:my-8 w-full md:w-full ${size ? size : 'md:max-w-lg'} ${space}`}>
                   <div className='max-h-[80vh] pe-3 me-[-10px] overflow-auto'>
                   {children}
                   </div>
                   <button
                     type="button"
-                    className={`close absolute top-2 right-6 text-${iconcolor || 'white'} text-[30px] `}
+                    className={`close absolute top-0 right-6 text-black text-[40px] `}
                     onClick={() => setOpen(false)}
                     ref={cancelButtonRef}>
                     &times;   
