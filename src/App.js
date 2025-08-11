@@ -23,7 +23,6 @@ function App() {
                     <Route path="/" element={<AllAccounts />} />
                       <Route path="/unauthorized" element={<Unauthorized />} />
                     <Route path="/login" element={<Login />} />
-                     
                       <Route path="/home" element={
                         <PrivateRoute>
                           <AllAccounts />
