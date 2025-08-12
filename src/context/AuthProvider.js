@@ -1,7 +1,7 @@
- 
 
 
-import { createContext, useState } from "react";
+
+import { createContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 export const UserContext = createContext(); 
 export default function UserContextProvider(props) {
@@ -9,15 +9,57 @@ export default function UserContextProvider(props) {
   const [user, setUser] = useState(null);
   const [company, setcompany] = useState(null);
   const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (user) => {
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Add token validation here - you can call your API to verify the token
+          // For now, we'll assume the token is valid if it exists
+          // TODO: Replace with actual API call to validate token
+          // const response = await fetch('/api/auth/verify', {
+          //   headers: { Authorization: `Bearer ${token}` }
+          // });
+          // if (response.ok) {
+          //   const userData = await response.json();
+          //   setUser(userData);
+          //   setIsAuthenticated(true);
+          // } else {
+          //   localStorage.removeItem('token');
+          //   setIsAuthenticated(false);
+          // }
+          
+          // For now, trust the token exists
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Token validation failed:', error);
+          localStorage.removeItem('token');
+          setIsAuthenticated(false);
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
+
+  const login = (userData, token) => {
+    if (token) {
+      localStorage.setItem('token', token);
+    }
     setIsAuthenticated(true);
-    setUser(user);
+    setUser(userData);
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setIsAuthenticated(false);
     setUser(null);
+    setcompany(null);
+    setAdmin(null);
   };
 
   function Errors(error) { 
@@ -40,7 +82,8 @@ export default function UserContextProvider(props) {
     isAuthenticated, setIsAuthenticated,
     user, setUser,
     login, company, setcompany,
-    logout,admin, setAdmin
+    logout, admin, setAdmin,
+    loading
   };
 
     return <>

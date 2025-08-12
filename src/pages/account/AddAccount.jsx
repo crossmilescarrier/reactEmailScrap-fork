@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react'
+import { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import Api from '../../api/Api';
+import AccountApi from '../../api/AccountApi';
 import { UserContext } from '../../context/AuthProvider';
 import Popup from '../common/Popup';
 import { IoMdAdd } from 'react-icons/io';
@@ -20,43 +20,80 @@ export default function AddAccount({item, fetchLists, classes, text}){
 
     const [loading, setLoading] = useState(false);
   
-    const add_customer = () => {
+    const add_customer = async () => {
       setLoading(true);
-      const respA = Api.post(`/account/add`, data);
-      respA.then((res) => {
-        setLoading(false);
-        if (res.data.status === true) {
-          toast.success(res.data.message);
-         //  fetchLists && fetchLists();
+      try {
+        const response = await AccountApi.addAccount(data.email);
+        
+        if (response.status === true) {
+          toast.success(response.message);
+          // Refresh the accounts list
+          if (fetchLists) {
+            fetchLists();
+          }
           setaction('close');
           setData({
             email:  "",
           });
         } else {
-          toast.error(res.data.message);
+          toast.error(response.message);
         }
-      }).catch((err) => {
+      } catch (error) {
+        console.error('Add account error:', error);
+        if (error.message) {
+          toast.error(error.message);
+        } else {
+          Errors(error);
+        }
+      } finally {
         setLoading(false);
-        Errors(err);
-      });
+      }
     }
     
 
   return (
     <div>
-      <Popup action={action} size="md:max-w-xl" space='p-8' bg="bg-black" btnclasses={classes} btntext={<>
-         <IoMdAdd className="me-2" size={20}/> Add New Email
-         </>} >
+      <Popup 
+        action={action} 
+        size="md:max-w-xl" 
+        space='p-8' 
+        bg="bg-white" 
+        btnclasses={classes || "btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"} 
+        btntext={text || (
+          <>
+            <IoMdAdd className="me-2" size={20}/> Add New Email
+          </>
+        )}
+      >
          <div className='py-2'>
-            <h2 className='text-black font-bold text-xl text-center'>Add New Account</h2>
+            <h2 className='text-black font-bold text-xl text-center mb-6'>Add New Account</h2>
             <div className='input-item'>
-               <input name='email' onChange={handleinput} type={'email'} placeholder={"Enter new email address"} className="input-sm mt-6 text-center" />
+               <label className='block text-sm font-medium text-gray-700 mb-2'>
+                 Email Address
+               </label>
+               <input 
+                 name='email' 
+                 onChange={handleinput} 
+                 value={data.email}
+                 type='email' 
+                 placeholder="Enter new email address" 
+                 className="input-sm w-full text-center border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+               />
             </div>
-            <div className='flex justify-center items-center'>
-               <button disabled={data.email === ""}  onClick={add_customer} className={`${data.email === "" ? "disabled" : ""} btn md mt-6 px-[50px] font-bold`}>{loading ? "Updating..." : "Submit"}</button>
+            <div className='flex justify-center items-center space-x-4 mt-6'>
+               <button 
+                 disabled={!data.email || data.email.trim() === "" || loading}  
+                 onClick={add_customer} 
+                 className={`${
+                   (!data.email || data.email.trim() === "" || loading) 
+                     ? "opacity-50 cursor-not-allowed bg-gray-300" 
+                     : "bg-blue-600 hover:bg-blue-700 text-white"
+                 } px-6 py-2 rounded-md font-medium transition-colors duration-200`}
+               >
+                 {loading ? "Adding..." : "Add Account"}
+               </button>
             </div>
          </div>
-
       </Popup>
     </div>
   )

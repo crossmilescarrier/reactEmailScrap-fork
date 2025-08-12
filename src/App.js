@@ -7,8 +7,8 @@ import Login from './pages/auth/LogIn';
 import Emails from './pages/Emails';
 import Chats from './pages/Chats';
 import AllAccounts from './pages/account/AllAccounts';
-import ThreadsLists from './pages/thread/ThreadsLists';
-import EmailContainer from './pages/emails/EmailContainer';
+import AccountThreads from './pages/account/AccountThreads';
+import ThreadDetail from './pages/thread/ThreadDetail';
 import Unauthorized from './components/Unauthorized';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -20,38 +20,48 @@ function App() {
               <BrowserRouter>
                 <div className="routes">
                   <Routes>
-                    <Route path="/" element={<AllAccounts />} />
-                      <Route path="/unauthorized" element={<Unauthorized />} />
+                    {/* Public Routes */}
                     <Route path="/login" element={<Login />} />
-                      <Route path="/home" element={
-                        <PrivateRoute>
-                          <AllAccounts />
-                        </PrivateRoute>
-                      } />
+                    <Route path="/unauthorized" element={<Unauthorized />} />
+                    
+                    {/* Protected Routes */}
+                    <Route path="/" element={
+                      <PrivateRoute>
+                        <AllAccounts />
+                      </PrivateRoute>
+                    } />
+                    
+                    <Route path="/home" element={
+                      <PrivateRoute>
+                        <AllAccounts />
+                      </PrivateRoute>
+                    } />
 
-                      <Route path="/account/naveen@crossmilescarrier.com/emails" element={
-                        <PrivateRoute>
-                          <ThreadsLists />
-                       </PrivateRoute>
-                      } />
+                    <Route path="/account/:accountEmail/threads" element={
+                      <PrivateRoute>
+                        <AccountThreads />
+                      </PrivateRoute>
+                    } />
 
-                      <Route path="/emails" element={
-                        <PrivateRoute>
-                          <Emails />
-                        </PrivateRoute>
-                      } />
-                      <Route path="/:account/email/:id" element={
-                        <PrivateRoute>
-                          <EmailContainer />
-                        </PrivateRoute>
-                      } />
+                    <Route path="/emails" element={
+                      <PrivateRoute>
+                        <Emails />
+                      </PrivateRoute>
+                    } />
 
-                      <Route path="/chats" element={
-                        <PrivateRoute>
-                          <Chats />
-                        </PrivateRoute>
-                      } />
+                    <Route path="/account/:accountEmail/thread/:threadId" element={
+                      <PrivateRoute>
+                        <ThreadDetail />
+                      </PrivateRoute>
+                    } />
 
+                    <Route path="/chats" element={
+                      <PrivateRoute>
+                        <Chats />
+                      </PrivateRoute>
+                    } />
+
+                    {/* Catch all - 404 */}
                     <Route path="*" element={<Error404 />} />
                   </Routes>
                 </div>

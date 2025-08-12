@@ -1,0 +1,512 @@
+/* Email Body Container Styles */
+.email-body-container {
+  /* Contain styles to prevent email CSS from affecting the rest of the page */
+  contain: layout style;
+  isolation: isolate;
+  
+  /* Responsive handling */
+  max-width: 100%;
+  overflow-x: auto;
+  word-wrap: break-word;
+  
+  /* Base typography that works well for emails */
+  font-family: Arial, Helvetica, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Override potentially problematic email styles */
+.email-body-container * {
+  /* Prevent text from becoming too large */
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Handle common email elements */
+.email-body-container table {
+  width: auto !important;
+  max-width: 100% !important;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.email-body-container td,
+.email-body-container th {
+  padding: 8px;
+  vertical-align: top;
+}
+
+.email-body-container img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 8px 0;
+}
+
+/* Typography improvements */
+.email-body-container h1,
+.email-body-container h2,
+.email-body-container h3,
+.email-body-container h4,
+.email-body-container h5,
+.email-body-container h6 {
+  margin: 16px 0 8px 0;
+  line-height: 1.4;
+}
+
+.email-body-container p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.email-body-container a {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+.email-body-container a:hover {
+  color: #1d4ed8;
+}
+
+/* Lists */
+.email-body-container ul,
+.email-body-container ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.email-body-container li {
+  margin: 4px 0;
+}
+
+/* Block quotes and quoted text */
+.email-body-container blockquote {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-left: 4px solid #e5e7eb;
+  background-color: #f9fafb;
+  font-style: italic;
+}
+
+/* Gmail specific quote handling */
+.email-body-container .gmail_quote {
+  border-left: 3px solid #ccc;
+  padding-left: 10px;
+  margin-left: 0;
+  color: #666;
+  background-color: #f8f9fa;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.email-body-container .gmail_quote_container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Handle Outlook-specific elements */
+.email-body-container [class*="outlook"] {
+  font-family: Arial, sans-serif !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .email-body-container {
+    font-size: 16px; /* Slightly larger on mobile for readability */
+  }
+  
+  .email-body-container table {
+    font-size: 14px;
+  }
+}
+
+/* Dark mode support (if your app supports it) */
+@media (prefers-color-scheme: dark) {
+  .email-body-container {
+    background-color: #1f2937;
+    color: #f3f4f6;
+  }
+  
+  .email-body-container a {
+    color: #60a5fa;
+  }
+  
+  .email-body-container blockquote,
+  .email-body-container .gmail_quote {
+    background-color: #374151;
+    border-left-color: #6b7280;
+  }
+}
+
+/* Sanitization - hide potentially problematic elements */
+.email-body-container script,
+.email-body-container style,
+.email-body-container link[rel="stylesheet"] {
+  display: none !important;
+}
+
+/* Hide email client specific elements that might cause issues */
+.email-body-container [style*="display: none"],
+.email-body-container [style*="display:none"] {
+  display: none !important;
+}
+
+/* Ensure email content is selectable */
+.email-body-container {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* =================== GMAIL-LIKE STYLING =================== */
+
+/* Email Item Container */
+.gmail-email-item {
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+  border: 1px solid #e8eaed;
+  transition: all 0.2s ease;
+}
+
+.gmail-email-item:hover {
+  box-shadow: 0 2px 8px rgba(60, 64, 67, 0.15);
+}
+
+/* Expanded Email Styling */
+.gmail-email-expanded {
+  padding: 20px 24px;
+}
+
+.gmail-email-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Avatar Styling */
+.gmail-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.gmail-avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Sender Info */
+.gmail-sender-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gmail-sender-name {
+  font-weight: 600;
+  color: #202124;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.gmail-sender-email {
+  color: #5f6368;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.gmail-recipients {
+  color: #5f6368;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.gmail-recipient-email {
+  color: #202124;
+}
+
+/* Email Actions */
+.gmail-email-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gmail-email-date {
+  color: #5f6368;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.gmail-action-buttons {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.gmail-email-item:hover .gmail-action-buttons {
+  opacity: 1;
+}
+
+.gmail-action-btn {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: #5f6368;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gmail-action-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+/* Email Body */
+.gmail-email-body {
+  margin: 16px 0;
+  line-height: 1.6;
+  color: #202124;
+  font-size: 14px;
+}
+
+.gmail-email-body .email-body-container {
+  /* Override some styles for Gmail-like appearance */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #202124;
+}
+
+/* Quote Toggle */
+.gmail-quote-toggle {
+  margin: 12px 0;
+}
+
+.gmail-quote-toggle button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+}
+
+/* Attachments */
+.gmail-attachments {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.gmail-attachments-header {
+  display: flex;
+  align-items: center;
+  color: #5f6368;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.gmail-attachments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* Reply Actions */
+.gmail-reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.gmail-reply-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid #dadce0;
+  background: white;
+  color: #3c4043;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gmail-reply-btn:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.1);
+}
+
+.gmail-reply-btn.primary {
+  background: #1a73e8;
+  color: white;
+  border-color: #1a73e8;
+}
+
+.gmail-reply-btn.primary:hover {
+  background: #1557b0;
+  border-color: #1557b0;
+}
+
+/* Collapsed Email Styling */
+.gmail-email-collapsed {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.gmail-email-collapsed:hover {
+  background: #f8f9fa;
+}
+
+.gmail-sender-name-small {
+  font-weight: 500;
+  color: #202124;
+  font-size: 14px;
+}
+
+.gmail-date-small {
+  color: #5f6368;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.gmail-preview-text {
+  color: #5f6368;
+  font-size: 13px;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gmail-email-expanded {
+    padding: 16px;
+  }
+  
+  .gmail-email-header {
+    margin-bottom: 16px;
+  }
+  
+  .gmail-attachments-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gmail-reply-actions {
+    flex-direction: column;
+  }
+  
+  .gmail-email-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  
+  .gmail-action-buttons {
+    opacity: 1; /* Always show on mobile */
+  }
+}
+
+/* Thread Header Styling */
+.gmail-thread-header {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+  border: 1px solid #e8eaed;
+  margin-bottom: 16px;
+}
+
+.gmail-thread-subject {
+  font-size: 22px;
+  font-weight: 400;
+  color: #202124;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.gmail-thread-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #5f6368;
+  font-size: 13px;
+}
+
+/* Animation for expanding/collapsing */
+.gmail-email-item.expanded .gmail-email-expanded {
+  animation: expandEmail 0.3s ease;
+}
+
+.gmail-email-item.collapsed .gmail-email-collapsed {
+  animation: collapseEmail 0.3s ease;
+}
+
+@keyframes expandEmail {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes collapseEmail {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Custom scrollbar for email body */
+.gmail-email-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gmail-email-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.gmail-email-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.gmail-email-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

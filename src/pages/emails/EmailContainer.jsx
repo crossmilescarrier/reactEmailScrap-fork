@@ -63,7 +63,7 @@ export default function EmailContainer() {
                <h2 className='m-0 mb-0 font-bold text-normal '>{e.from}</h2>
                <div className='text-gray-500'>{new Date(e.date).toLocaleString()}</div>
             </div>
-            <div className='text-gray-500 mt-2 line-clamp-1'>{e.body.textBlocks}</div>
+            {/* <div className='text-gray-500 mt-2 line-clamp-1'>{e.body.rawHtml}</div> */}
          </div>
          }
       </>
