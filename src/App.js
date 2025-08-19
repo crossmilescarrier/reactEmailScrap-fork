@@ -7,10 +7,15 @@ import Login from './pages/auth/LogIn';
 import Emails from './pages/Emails';
 import Chats from './pages/Chats';
 import AllAccounts from './pages/account/AllAccounts';
-import AccountThreads from './pages/account/AccountThreads';
 import ThreadDetail from './pages/thread/ThreadDetail';
+import AccountThreads from './pages/thread/AccountThreads';
+import AccountChats from './pages/chat/AccountChats';
 import Unauthorized from './components/Unauthorized';
 import PrivateRoute from './components/PrivateRoute';
+import ChatMessageDebug from './components/ChatMessageDebug';
+import ChatMessageTest from './components/ChatMessageTest';
+import MediaPreviewTest from './components/MediaPreviewTest';
+import MediaDebugTest from './components/MediaDebugTest';
 
 
 function App() {
@@ -23,6 +28,10 @@ function App() {
                     {/* Public Routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/unauthorized" element={<Unauthorized />} />
+                    <Route path="/debug-media" element={<ChatMessageDebug />} />
+                    <Route path="/test-chat" element={<ChatMessageTest />} />
+                    <Route path="/test-media-preview" element={<MediaPreviewTest />} />
+                    <Route path="/media-debug" element={<MediaDebugTest />} />
                     
                     {/* Protected Routes */}
                     <Route path="/" element={
@@ -43,6 +52,12 @@ function App() {
                       </PrivateRoute>
                     } />
 
+                    <Route path="/account/:accountEmail/threads/:tab" element={
+                      <PrivateRoute>
+                        <AccountThreads />
+                      </PrivateRoute>
+                    } />
+
                     <Route path="/emails" element={
                       <PrivateRoute>
                         <Emails />
@@ -52,6 +67,18 @@ function App() {
                     <Route path="/account/:accountEmail/thread/:threadId" element={
                       <PrivateRoute>
                         <ThreadDetail />
+                      </PrivateRoute>
+                    } />
+
+                    <Route path="/account/:accountEmail/chats" element={
+                      <PrivateRoute>
+                        <AccountChats />
+                      </PrivateRoute>
+                    } />
+
+                    <Route path="/account/:accountEmail/chats/:chatId" element={
+                      <PrivateRoute>
+                        <AccountChats />
                       </PrivateRoute>
                     } />
 

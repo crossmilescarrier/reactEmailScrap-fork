@@ -76,10 +76,7 @@ export default function EditAccount({ account, fetchAccounts, classes, text }) {
                 bg="bg-white" 
                 btnclasses={classes || "text-blue-600 hover:text-blue-800"} 
                 btntext={
-                    <>
-                        <FiEdit className="me-2" size={16}/> 
-                        {text || "Edit"}
-                    </>
+                    <> {text || "Edit"} </>
                 }
                 onClose={handleClose}
             >
@@ -87,7 +84,6 @@ export default function EditAccount({ account, fetchAccounts, classes, text }) {
                     <h2 className='text-black font-bold text-xl text-center mb-6'>
                         Edit Account
                     </h2>
-                    
                     <div className='input-item'>
                         <label className='block text-sm font-medium text-gray-700 mb-2'>
                             Email Address

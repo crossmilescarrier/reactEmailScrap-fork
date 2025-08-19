@@ -12,7 +12,6 @@ export default function CheckLogin({redirect, takeaction}) {
       const resp = Api.get('/user/profile');
       resp.then((res) => {
         if(res.data.status){
-         
           setIsAuthenticated(true);
           setUser(res.data.user);
           setcompany(res.data.company);

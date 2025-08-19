@@ -4,19 +4,25 @@ import AccountItem from './AccountItem';
 import AddAccount from './AddAccount';
 import AccountApi from '../../api/AccountApi';
 import toast from 'react-hot-toast';
-import { PageLoader } from '../../components/Spinner';
+import Loading, { PageLoader, SkeletonLoader } from '../../components/Loading';
+import { useDebounce } from '../../utils/debounce';
+import { IoSearchOutline } from "react-icons/io5";
 
 export default function AllAccounts() {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    // Debounce search term with 300ms delay
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     // Fetch accounts from API
-    const fetchAccounts = async () => {
+    const fetchAccounts = async (search = null) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await AccountApi.getAllAccounts();
+            const response = await AccountApi.getAllAccounts(search);
             
             if (response.status === true) {
                 setAccounts(response.accounts || []);
@@ -37,6 +43,15 @@ export default function AllAccounts() {
     useEffect(() => {
         fetchAccounts();
     }, []);
+    
+    // Handle debounced search
+    useEffect(() => {
+        if (debouncedSearchTerm !== '') {
+            fetchAccounts(debouncedSearchTerm);
+        } else {
+            fetchAccounts();
+        }
+    }, [debouncedSearchTerm]);
 
     // Loading state
     if (loading) {
@@ -45,7 +60,17 @@ export default function AllAccounts() {
                 <div className='flex items-center justify-between mb-6'>
                     <h1 className='heading'>All Email Accounts</h1>
                 </div>
-                <PageLoader message="Loading accounts..." />
+                <Loading 
+                    variant="spinner" 
+                    size="lg" 
+                    message="Loading accounts..."
+                    theme="light"
+                />
+                <div className="mt-8 space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <SkeletonLoader key={i} lines={3} height="h-4" className="p-6 border rounded-lg bg-white" />
+                    ))}
+                </div>
             </AuthLayout>
         );
     }
@@ -62,8 +87,7 @@ export default function AllAccounts() {
                     <div className='text-red-600 text-lg mb-4'>⚠️ {error}</div>
                     <button 
                         onClick={fetchAccounts}
-                        className='btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'
-                    >
+                        className='btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'>
                         Retry
                     </button>
                 </div>
@@ -73,9 +97,19 @@ export default function AllAccounts() {
 
     return (
         <AuthLayout>
-            <div className='flex items-center justify-between mb-6'>
-                <h1 className='heading'>All Email Accounts ({accounts.length})</h1>
-                <AddAccount fetchLists={fetchAccounts} />
+            <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6'>
+                <h1 className='heading text-xl sm:text-2xl'>All Email Accounts ({accounts.length})</h1>
+                <div className='search-account relative w-full sm:w-auto'>
+                  <IoSearchOutline className="absolute top-4 left-3" />
+                  <input 
+                      type="text" 
+                      placeholder="Search email accounts..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="focus:outline-none border border-gray-300 bg-gray-200 rounded-xl px-4 py-3 ps-[40px] w-full sm:w-64"
+                  />
+                </div>
+                {/* <AddAccount fetchLists={fetchAccounts} /> */}
             </div>
             
             <div className='email-list'>

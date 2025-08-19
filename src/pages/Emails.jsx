@@ -73,13 +73,13 @@ export default function Emails() {
 
   return (
     <AuthLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="heading">All Emails</h1>
-        <div className="flex gap-2">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6">
+        <h1 className="heading text-xl sm:text-2xl">All Emails</h1>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
             Refresh
           </button>
-          <button className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+          <button className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base">
             Compose
           </button>
         </div>

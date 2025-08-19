@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import AuthLayout from '../layout/AuthLayout'
+import Loading, { ButtonLoader, useLoadingStates } from '../components/Loading'
 
 // Mocked chat data for demonstration
 const mockChats = [
@@ -95,6 +96,31 @@ const mockChats = [
 ];
 
 export default function Chats() {
+  const [loading, setLoading] = useState(true);
+  const { setLoading: setActionLoading, isLoading } = useLoadingStates();
+
+  // Simulate loading for demo data
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleRefresh = async () => {
+    setActionLoading('refresh', true);
+    // Simulate API call
+    setTimeout(() => {
+      setActionLoading('refresh', false);
+    }, 2000);
+  };
+
+  const handleNewChat = async () => {
+    setActionLoading('newChat', true);
+    // Simulate API call
+    setTimeout(() => {
+      setActionLoading('newChat', false);
+    }, 1500);
+  };
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-US', {
@@ -124,16 +150,42 @@ export default function Chats() {
     }
   };
 
+  if (loading) {
+    return (
+      <AuthLayout>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="heading">Team Chats</h1>
+        </div>
+        <Loading 
+          variant="spinner" 
+          size="lg" 
+          message="Loading team chats..."
+          theme="light"
+        />
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="heading">Team Chats</h1>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            New Chat
+          <button 
+            onClick={handleNewChat}
+            disabled={isLoading('newChat')}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            {isLoading('newChat') && <ButtonLoader size="sm" color="white" />}
+            <span>{isLoading('newChat') ? 'Creating...' : 'New Chat'}</span>
           </button>
-          <button className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-            Refresh
+          <button 
+            onClick={handleRefresh}
+            disabled={isLoading('refresh')}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            {isLoading('refresh') && <ButtonLoader size="sm" color="white" />}
+            <span>{isLoading('refresh') ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>

@@ -94,61 +94,61 @@ export default function AccountItem({ account, fetchAccounts }) {
     };
     
     return (
-        <div className='email-item flex items-center justify-between p-6 bg-gray-200 hover:bg-gray-300 rounded-[20px] mb-4 relative'>
+        <div className='email-item flex flex-col sm:flex-row sm:items-center justify-between bg-gray-200 hover:bg-gray-300 rounded-[20px] mb-4 relative'>
             <Link 
-                to={`/account/${account.email}/threads`} 
-                className='flex-1 flex items-center justify-between'
+                to={`/account/${account.email}/threads/inbox`} 
+                className='flex-1 flex items-center justify-between p-4 sm:p-6'
             >
-                <div>
-                    <h2 className='font-bold text-2xl text-gray-800'>{account.email}</h2>
-                    <div className='mt-3 flex'>
-                        <p className='me-4 text-gray-600'>Last synced: {formatLastSync(account.lastSync)}</p>
-                        <p className='text-gray-600'>Added on: {formatDate(account.createdAt)}</p>
+                <div className='flex-1'>
+                    <h2 className='font-bold text-lg sm:text-xl lg:text-2xl text-gray-800 break-all'>{account.email}</h2>
+                    <div className='mt-2 sm:mt-3 flex flex-col sm:flex-row gap-1 sm:gap-4 text-sm sm:text-base'>
+                        <p className='text-gray-600'>Last synced: {formatLastSync(account.lastSync)}</p>
+                        <p className='text-gray-600'>Added: {formatDate(account.createdAt)}</p>
                     </div>
                 </div>
-                <span className='bg-green-700 text-white py-1 px-3 text-sm rounded-full'>
-                    Active
-                </span>
             </Link>
-            
-            {/* Action buttons */}
-            <div className='flex items-center space-x-2 ml-4'>
-                <button
-                    onClick={handleSync}
-                    disabled={syncing}
-                    className={`p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-md transition-colors duration-200 ${
-                        syncing ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    title="Sync Emails"
-                >
-                    {syncing ? (
-                        <InlineSpinner color="green" />
-                    ) : (
-                        <FiRefreshCw size={16} />
-                    )}
-                </button>
-                
-                <EditAccount 
-                    account={account}
-                    fetchAccounts={fetchAccounts}
-                    classes="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors duration-200"
-                    text={<FiEdit size={16} />}
-                />
-                
-                <button
-                    onClick={handleDelete}
-                    disabled={loading}
-                    className={`p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-md transition-colors duration-200 ${
-                        loading ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    title="Delete Account"
-                >
-                    {loading ? (
-                        <InlineSpinner color="red" />
-                    ) : (
-                        <FiTrash2 size={16} />
-                    )}
-                </button>
+            <div className='right-a p-4 sm:p-6 pt-0 sm:pt-6 flex items-center justify-between w-full sm:w-auto border-t sm:border-t-0 border-gray-300 sm:border-0 mt-0'>
+               <div className='flex items-center space-x-3 sm:space-x-2 ml-0 sm:ml-4 me-3'>
+                  <button
+                     onClick={handleSync}
+                     disabled={syncing}
+                     className={`p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-md transition-colors duration-200 ${
+                           syncing ? 'opacity-50 cursor-not-allowed' : ''
+                     }`}
+                     title="Sync Emails"
+                  >
+                     {syncing ? (
+                           <InlineSpinner color="green" />
+                     ) : (
+                           <FiRefreshCw size={16} />
+                     )}
+                  </button>
+                  
+                  <EditAccount 
+                     account={account}
+                     fetchAccounts={fetchAccounts}
+                     classes="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors duration-200"
+                     text={<FiEdit size={16} />}
+                  />
+                  
+                   <button
+                     onClick={handleDelete}
+                     disabled={loading}
+                     className={`p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-md transition-colors duration-200 ${
+                           loading ? 'opacity-50 cursor-not-allowed' : ''
+                     }`}
+                     title="Delete Account"
+                  >
+                     {loading ? (
+                           <InlineSpinner color="red" />
+                     ) : (
+                           <FiTrash2 size={16} />
+                     )}
+                  </button>  
+               </div>
+               <span className='bg-green-700 text-white py-1 px-3 text-sm rounded-full whitespace-nowrap'>
+                  Active
+               </span>
             </div>
         </div>
     );

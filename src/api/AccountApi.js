@@ -12,9 +12,14 @@ class AccountApi {
   }
 
   // Get all accounts
-  static async getAllAccounts() {
+  static async getAllAccounts(search = null) {
     try {
-      const response = await Api.get('/accounts');
+      const params = {};
+      if (search) {
+        params.search = search;
+      }
+      
+      const response = await Api.get('/accounts', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -72,10 +77,20 @@ class AccountApi {
   }
 
   // Get account threads
-  static async getAccountThreads(accountId, labelType = 'INBOX', page = 1, limit = 20) {
+  static async getAccountThreads(email, label = 'INBOX', page = 1, limit = 20, q = null) {
     try {
-      const response = await Api.get(`/account/${accountId}/threads`, {
-        params: { labelType, page, limit }
+      const params = {
+        labelType: label,
+        page,
+        limit
+      };
+      
+      if (q) {
+        params.q = q;
+      }
+      
+      const response = await Api.get(`/account/${email}/threads`, {
+        params
       });
       return response.data;
     } catch (error) {
@@ -87,6 +102,36 @@ class AccountApi {
   static async getThread(threadId) {
     try {
       const response = await Api.get(`/thread/${threadId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+
+  // Get chats for account
+  static async getChats(accountEmail, page = 1, limit = 20) {
+    try {
+      const response = await Api.get(`/account/${accountEmail}/chats?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+
+  // Get messages for specific chat
+  static async getChatMessages(accountEmail, chatId, page = 1, limit = 50) {
+    try {
+      const response = await Api.get(`/account/${accountEmail}/chats/${chatId}/messages?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+
+  // Sync chats for account
+  static async syncChats(accountEmail) {
+    try {
+      const response = await Api.post(`/account/${accountEmail}/sync-chats`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

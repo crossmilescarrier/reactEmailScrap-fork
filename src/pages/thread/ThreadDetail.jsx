@@ -5,13 +5,12 @@ import AccountApi from '../../api/AccountApi';
 import Api from '../../api/Api';
 import toast from 'react-hot-toast';
 import { 
-   FiArrowLeft, FiClock, FiUser, FiMail, FiPaperclip, FiDownload, 
+   FiArrowLeft,   FiPaperclip, FiDownload, 
    FiChevronDown, FiChevronRight, FiCornerUpLeft, FiUsers, FiShare,
-   FiStar, FiArchive, FiTrash2, FiMoreVertical, FiEye, FiMaximize2
+    FiMoreVertical, FiEye, FiMaximize2
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { PageLoader } from '../../components/Spinner';
-import '../../styles/email.css';
 
 export default function ThreadDetail() {
    const { accountEmail, threadId } = useParams();
@@ -246,11 +245,10 @@ export default function ThreadDetail() {
    // Email item component with Gmail-like design
    const EmailItem = ({ email, isLast, index, totalEmails }) => {
       const [showMail, setShowMail] = useState(defaultCollapse(index, totalEmails));
-      const [showQuote, setShowQuote] = useState(false);
+      const [showQuote, setShowQuote] = useState(!false);
       const emailRef = useRef(null);
 
       useEffect(() => {
-         // Hide Gmail quote containers by default
          if (emailRef.current && showMail) {
             const quoteContainers = emailRef.current.querySelectorAll('.gmail_quote, [class*="gmail_quote"]');
             quoteContainers.forEach(container => {
@@ -280,57 +278,45 @@ export default function ThreadDetail() {
       };
 
       return (
-         <div className={`gmail-email-item ${showMail ? 'expanded' : 'collapsed'}`}>
+         <div className={`bg-white rounded-[30px] mb-3 shadow-sm border border-gray-200 transition-all duration-200   ${showMail ? 'shadow-md' : ''}`}>
             {showMail ? (
-               <div className='gmail-email-expanded' ref={emailRef}>
-                  {/* Header */}
-                  <div className='gmail-email-header'>
+               <div className='p-5 md:p-6' ref={emailRef}>
+                  <div className='mb-5 pb-3 border-b border-gray-100'>
                      <div className='flex items-start justify-between'>
                         <div className='flex items-start space-x-4 flex-1'>
-                           {/* Avatar */}
-                           <div className='gmail-avatar'>
+                           <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium text-base flex-shrink-0'>
                               {extractSenderName(email.from).charAt(0).toUpperCase()}
                            </div>
                            
-                           {/* Sender Info */}
                            <div className='flex-1'>
                               <div className='flex items-center justify-between'>
-                                 <div className='gmail-sender-info'>
-                                    <span className='gmail-sender-name'>
+                                 <div className='flex flex-col'>
+                                    <span className='font-semibold text-gray-900 text-sm mb-0.5'>
                                        {extractSenderName(email.from)}
                                     </span>
-                                    <span className='gmail-sender-email'>
+                                    <span className='text-gray-500 text-xs ml-1.5'>
                                        &lt;{extractSenderEmail(email.from)}&gt;
                                     </span>
                                  </div>
                                  
-                                 {/* Actions */}
-                                 <div className='gmail-email-actions'>
-                                    <span className='gmail-email-date'>
+                                 <div className='flex flex-col items-end space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-3'>
+                                    <span className='text-gray-500 text-xs whitespace-nowrap'>
                                        {formatDate(email.date)}
                                     </span>
-                                    <div className='gmail-action-buttons'>
-                                       <button className='gmail-action-btn' title='Reply'>
-                                          <FiCornerUpLeft size={16} />
-                                       </button>
-                                       <button className='gmail-action-btn' title='More'>
-                                          <FiMoreVertical size={16} />
-                                       </button>
+                                    <div className='flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:opacity-100'>
                                        <button 
-                                          className='gmail-action-btn'
+                                          className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200'
                                           onClick={() => setShowMail(false)}
-                                          title='Minimize'
-                                       >
+                                          title='Minimize' >
                                           <FiChevronDown size={16} />
                                        </button>
                                     </div>
                                  </div>
                               </div>
                               
-                              {/* To/CC info */}
-                              <div className='gmail-recipients'>
+                              <div className='text-gray-500 text-xs mt-1'>
                                  <span>to </span>
-                                 <span className='gmail-recipient-email'>{email.to}</span>
+                                 <span className='text-gray-900'>{email.to}</span>
                               </div>
                            </div>
                         </div>
@@ -338,10 +324,18 @@ export default function ThreadDetail() {
                   </div>
 
                   {/* Email Body */}
-                  <div className='gmail-email-body'>
+                  <div className='my-4 leading-relaxed text-gray-900 text-sm'>
                      {email.body ? (
                         <div 
-                           className='email-body-container'
+                           className='prose prose-sm max-w-none [&_img]:max-w-full [&_img]:h-auto [&_table]:w-auto [&_table]:max-w-full [&_table]:border-collapse [&_td]:p-2 [&_td]:align-top [&_th]:p-2 [&_th]:align-top [&_a]:text-blue-600 [&_a]:underline hover:[&_a]:text-blue-700 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:ml-0 [&_blockquote]:italic [&_blockquote]:bg-gray-50 [&_blockquote]:p-3 [&_blockquote]:rounded [&_.gmail_quote]:border-l-3 [&_.gmail_quote]:border-gray-300 [&_.gmail_quote]:pl-3 [&_.gmail_quote]:ml-0 [&_.gmail_quote]:text-gray-600 [&_.gmail_quote]:bg-gray-50 [&_.gmail_quote]:mt-4 [&_.gmail_quote]:p-3 [&_.gmail_quote]:rounded'
+                           style={{
+                              contain: 'layout style',
+                              isolation: 'isolate',
+                              maxWidth: '100%',
+                              overflowX: 'auto',
+                              wordWrap: 'break-word',
+                              fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                           }}
                            dangerouslySetInnerHTML={{ __html: email.body }}
                         />
                      ) : (
@@ -352,10 +346,10 @@ export default function ThreadDetail() {
                   </div>
 
                   {/* Quoted Text Toggle */}
-                  <div className='gmail-quote-toggle'>
+                  <div className='my-3'>
                      <button 
                         onClick={toggleQuote} 
-                        className='text-blue-600 hover:text-blue-700 text-sm flex items-center'
+                        className='text-blue-600 hover:text-blue-700 text-sm flex items-center transition-colors duration-200 bg-none border-0 p-0'
                      >
                         <span className='mr-2'>...</span>
                         <span>{showQuote ? 'Hide' : 'Show'} quoted text</span>
@@ -364,14 +358,14 @@ export default function ThreadDetail() {
 
                   {/* Attachments */}
                   {email.attachments && email.attachments.length > 0 && (
-                     <div className='gmail-attachments'>
-                        <div className='gmail-attachments-header'>
+                     <div className='mt-5 pt-4 border-t border-gray-100'>
+                        <div className='flex items-center text-gray-500 text-sm font-medium mb-3'>
                            <FiPaperclip className='mr-2' size={16} />
                            <span>
                               {email.attachments.length} attachment{email.attachments.length > 1 ? 's' : ''}
                            </span>
                         </div>
-                        <div className='gmail-attachments-grid'>
+                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
                            {email.attachments.map((attachment, attachIndex) => (
                               <AttachmentPreview 
                                  key={attachIndex} 
@@ -382,30 +376,15 @@ export default function ThreadDetail() {
                      </div>
                   )}
 
-                  {/* Reply Actions */}
-                  <div className='gmail-reply-actions'>
-                     <button className='gmail-reply-btn primary'>
-                        <FiCornerUpLeft className='mr-2' size={16} />
-                        Reply
-                     </button>
-                     <button className='gmail-reply-btn'>
-                        <FiUsers className='mr-2' size={16} />
-                        Reply all
-                     </button>
-                     <button className='gmail-reply-btn'>
-                        <FiShare className='mr-2' size={16} />
-                        Forward
-                     </button>
-                  </div>
                </div>
             ) : (
                <div 
-                  className='gmail-email-collapsed'
+                  className='p-3 md:p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50 group'
                   onClick={() => setShowMail(true)}
                >
                   <div className='flex items-center space-x-4'>
                      {/* Avatar */}
-                     <div className='gmail-avatar-small'>
+                     <div className='w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium text-sm flex-shrink-0'>
                         {extractSenderName(email.from).charAt(0).toUpperCase()}
                      </div>
                      
@@ -413,24 +392,24 @@ export default function ThreadDetail() {
                      <div className='flex-1 min-w-0'>
                         <div className='flex items-center justify-between'>
                            <div className='flex items-center space-x-2 min-w-0 flex-1'>
-                              <span className='gmail-sender-name-small truncate'>
+                              <span className='font-medium text-gray-900 text-sm truncate'>
                                  {extractSenderName(email.from)}
                               </span>
                               {email.attachments && email.attachments.length > 0 && (
                                  <FiPaperclip className='text-gray-400 flex-shrink-0' size={14} />
                               )}
                            </div>
-                           <span className='gmail-date-small'>
+                           <span className='text-gray-500 text-xs whitespace-nowrap'>
                               {formatDate(email.date)}
                            </span>
                         </div>
-                        <div className='gmail-preview-text'>
+                        <div className='text-gray-500 text-sm mt-0.5 leading-snug line-clamp-2'>
                            {email.textBlocks?.join(' ').slice(0, 100) || 'No preview available'}...
                         </div>
                      </div>
                      
                      {/* Expand Icon */}
-                     <FiChevronRight className='text-gray-400 flex-shrink-0' size={16} />
+                     <FiChevronRight className='text-gray-400 flex-shrink-0 group-hover:text-gray-600 transition-colors duration-200' size={16} />
                   </div>
                </div>
             )}
@@ -454,7 +433,7 @@ export default function ThreadDetail() {
                   {error || 'Thread not found'}
                </div>
                <Link 
-                  to={`/account/${accountEmail}/threads`}
+                  to={`/account/${accountEmail}/threads/inbox`}
                   className="inline-flex items-center text-blue-600 hover:text-blue-700"
                >
                   <FiArrowLeft className="mr-1" size={16} />
@@ -467,20 +446,18 @@ export default function ThreadDetail() {
 
    return (
       <AuthLayout>
-         {/* Header */}
          <div className='mb-6'>
             <div className='flex items-center mb-4'>
                <Link 
-                  to={`/account/${accountEmail}/threads`}
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700 mr-4"
-               >
+                  to={`/account/${accountEmail}/threads/inbox`}
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 mr-4" >
                   <FiArrowLeft className="mr-1" size={16} />
                   Back to threads
                </Link>
             </div>
             
             <h1 className="heading text-2xl font-bold text-gray-900 mb-2">
-               {thread.subject || '(No Subject)'}
+               {thread.subject || 'No Subject'}
             </h1>
             
             <div className='flex items-center space-x-4 text-sm text-gray-600'>
