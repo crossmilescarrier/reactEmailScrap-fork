@@ -93,21 +93,21 @@ export default function AddAccount({item, fetchLists, classes, text}){
          <div className='py-2'>
             <h2 className='text-black font-bold text-xl text-center mb-6'>Add New Account</h2>
             <div className='input-item'>
-               <label className='block text-sm font-medium text-gray-700 mb-2'>
+               {/* <label className='block text-sm font-medium text-gray-700 mb-1'>
                  Email Address
-               </label>
-               <input 
-                 name='email' 
-                 onChange={handleinput} 
-                 value={data.email}
-                 type='email' 
-                 placeholder="Enter new email address" 
-                 className={`input-sm w-full text-center border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:border-transparent ${
-                   emailError 
+               </label> */}
+               <input  
+                 name='email'  
+                 onChange={handleinput}  
+                 value={data.email}  
+                 type='email'   
+                 placeholder="Enter new email address"  
+                 className={`input-sm w-full text-center border rounded-[15px] px-3 py-[14px] text-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                   emailError  
                      ? "border-red-500 focus:ring-red-500" 
                      : "border-gray-300 focus:ring-blue-500"
-                 }`}
-               />
+                 }`} 
+               /> 
                {emailError && (
                  <p className="text-red-500 text-sm mt-1 text-center">{emailError}</p>
                )}
@@ -120,7 +120,7 @@ export default function AddAccount({item, fetchLists, classes, text}){
                    (!data.email || data.email.trim() === "" || emailError || loading) 
                      ? "opacity-50 cursor-not-allowed bg-gray-300" 
                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                 } px-6 py-2 rounded-md font-medium transition-colors duration-200 flex items-center justify-center space-x-2`}
+                 } px-6 py-2 btn text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2`}
                >
                  {loading && <ButtonLoader size="sm" color="white" />}
                  <span>{loading ? "Adding Account..." : "Add Account"}</span>

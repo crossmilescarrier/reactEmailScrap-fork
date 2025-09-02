@@ -18,11 +18,12 @@ export const getProxyBaseURL = () => {
 // Generate media file URL (supports both local files and proxy for Google Chat URLs)
 export const getMediaURL = (attachment, chatId = null, messageIndex = null, attachmentIndex = null) => {
     console.log('🔍 getMediaURL called with:', { 
-        attachment: attachment?.contentName || attachment, 
+        attachment: attachment?.contentName || attachment?.filename || attachment, 
         chatId, 
         messageIndex, 
         attachmentIndex,
-        hasRealUrls: !!(attachment?.downloadUri || attachment?.downloadUrl)
+        hasGoogleUrls: !!(attachment?.downloadUrl || attachment?.thumbnailUrl),
+        downloadStatus: attachment?.downloadStatus
     });
     
     // If attachment is just a string (legacy), treat as localPath
@@ -44,18 +45,23 @@ export const getMediaURL = (attachment, chatId = null, messageIndex = null, atta
         return null;
     }
     
-    // PRIORITY 1: Real Google Chat URLs (direct from Google)
-    if (attachment.downloadUri || attachment.downloadUrl) {
-        const url = attachment.downloadUri || attachment.downloadUrl;
-        console.log('📡 Using REAL Google Chat media URL');
-        return url;
+    // PRIORITY 1: Local downloaded file (for Gmail attachments that have been downloaded)
+    if (attachment.localPath) {
+        const filename = attachment.localPath.split('/').pop();
+        const baseURL = getMediaBaseURL();
+        const fullURL = `${baseURL}/api/media/files/${filename}`;
+        console.log('📁 Using local downloaded file:', fullURL);
+        return fullURL;
     }
     
-    // PRIORITY 2: Google thumbnail URLs (for images)
-    if (attachment.contentType?.startsWith('image/') && (attachment.thumbnailUri || attachment.thumbnailUrl)) {
-        const url = attachment.thumbnailUri || attachment.thumbnailUrl;
-        console.log('🖼️ Using REAL Google thumbnail URL');
-        return url;
+    // PRIORITY 2: Use backend Gmail media proxy for Google Chat URLs
+    if (attachment.downloadUrl || attachment.thumbnailUrl) {
+        // Use the backend to proxy the Google Chat media URL
+        const attachmentId = attachment._id || attachment.name?.split('/').pop() || `${Date.now()}`;
+        const baseURL = getMediaBaseURL();
+        const proxyURL = `${baseURL}/api/media/gmail/media/${attachmentId}`;
+        console.log('📡 Using Gmail media proxy URL:', proxyURL);
+        return proxyURL;
     }
     
     // PRIORITY 3: Employee monitoring system - use sample media for demonstration
@@ -66,36 +72,16 @@ export const getMediaURL = (attachment, chatId = null, messageIndex = null, atta
         return monitoringURL;
     }
     
-    // Priority 1: Use proxy server if we have chat context and Google URLs
-    if (chatId && messageIndex !== null && attachmentIndex !== null && 
-        (attachment.directMediaUrl || attachment.downloadUrl || attachment.thumbnailUrl)) {
-        const proxyURL = `${getProxyBaseURL()}/api/media/${chatId}/${messageIndex}/${attachmentIndex}`;
-        console.log('📡 Using proxy server for Google Chat media:', proxyURL);
-        return proxyURL;
-    }
-    
-    // Priority 2: Direct Google URL (might not work due to CORS/auth)
-    if (attachment.directMediaUrl) {
-        console.log('🔗 Using direct Google URL:', attachment.directMediaUrl.substring(0, 80) + '...');
-        return attachment.directMediaUrl;
-    }
-    
-    // Priority 3: Local file (downloaded)
-    if (attachment.localPath) {
-        const filename = attachment.localPath.split('/').pop();
+    // PRIORITY 4: Direct filename-based lookup (for test files)
+    if (attachment.filename || attachment.contentName) {
+        const filename = attachment.filename || attachment.contentName;
         const baseURL = getMediaBaseURL();
         const fullURL = `${baseURL}/api/media/files/${filename}`;
-        console.log('📁 Using local media URL:', fullURL);
+        console.log('📄 Using filename-based URL:', fullURL);
         return fullURL;
     }
     
-    // Priority 4: Fallback to thumbnail for images (might not work due to CORS/auth)
-    if (attachment.thumbnailUrl && attachment.contentType?.startsWith('image/')) {
-        console.log('🖼️ Using thumbnail URL as fallback:', attachment.thumbnailUrl.substring(0, 80) + '...');
-        return attachment.thumbnailUrl;
-    }
-    
-    console.log('❌ No media URL available for attachment');
+    console.log('❌ No media URL available for attachment:', attachment);
     return null;
 };
 

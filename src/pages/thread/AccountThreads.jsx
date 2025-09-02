@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../layout/AuthLayout';
 import AccountApi from '../../api/AccountApi';
 import toast from 'react-hot-toast';
-import { FiRefreshCw, FiMail, FiSend, FiClock, FiUser, FiArrowRight, FiInbox, FiMessageCircle, FiSearch, FiX } from 'react-icons/fi';
+import { FiRefreshCw, FiMail, FiSend, FiClock, FiUser, FiArrowRight, FiInbox, FiMessageCircle, FiSearch, FiX, FiTrash2 } from 'react-icons/fi';
 import { PageLoader, InlineSpinner } from '../../components/Spinner';
 import ChatMessage from '../../components/ChatMessage';
 import useApiCall from '../../hooks/useApiCall';
@@ -17,6 +17,7 @@ export default function AccountThreads() {
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
+    const [clearingEmails, setClearingEmails] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     
     // Debounce search term with 300ms delay
@@ -215,6 +216,31 @@ export default function AccountThreads() {
         }
     };
 
+    // Handle clear all emails
+    const handleClearAllEmails = async () => {
+        if (!window.confirm('Are you sure you want to clear ALL emails? This action cannot be undone.')) {
+            return;
+        }
+        
+        setClearingEmails(true);
+        try {
+            const response = await AccountApi.clearAllEmails(accountEmail);
+            
+            if (response.status === true) {
+                toast.success(response.message || 'All emails cleared successfully');
+                // Refresh threads after clearing
+                fetchThreads(activeTab, 1); // Reset to first page
+            } else {
+                toast.error(response.message || 'Failed to clear emails');
+            }
+        } catch (error) {
+            console.error('Clear emails error:', error);
+            toast.error(error.message || 'Failed to clear emails');
+        } finally {
+            setClearingEmails(false);
+        }
+    };
+
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return 'No date';
@@ -275,27 +301,54 @@ export default function AccountThreads() {
                         </p>
                     </div>
                     
-                    <button
-                        onClick={handleSync}
-                        disabled={syncing}
-                        className={`flex items-center btn hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 w-full sm:w-auto justify-center ${
-                            syncing ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                    >
-                        {syncing ? (
-                            <>
-                                <InlineSpinner color="white" className="mr-2" />
-                                <span className="hidden sm:inline">Syncing...</span>
-                                <span className="sm:hidden">Sync...</span>
-                            </>
-                        ) : (
-                            <>
-                                <FiRefreshCw className="mr-2" size={16} />
-                                <span className="hidden sm:inline">Re-Sync Emails</span>
-                                <span className="sm:hidden">Sync</span>
-                            </>
+                    <div className="flex space-x-3 w-full sm:w-auto">
+                        {/* Clear All Emails Button - Only show for email tabs */}
+                        {activeTab !== 'CHATS' && (
+                            <button
+                                onClick={handleClearAllEmails}
+                                disabled={clearingEmails}
+                                className={`flex items-center btn bg-red-800 hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base px-4 sm:px-4 py-2 sm:py-3 flex-1 sm:flex-none justify-center ${
+                                    clearingEmails ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            >
+                                {clearingEmails ? (
+                                    <>
+                                        <InlineSpinner color="white" className="mr-2" />
+                                        <span className="hidden sm:inline">Clearing...</span>
+                                        <span className="sm:hidden">Clear...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FiTrash2 className="mr-2" size={16} />
+                                        <span className="hidden sm:inline">Clear All</span>
+                                        <span className="sm:hidden">Clear</span>
+                                    </>
+                                )}
+                            </button>
                         )}
-                    </button>
+                        
+                        <button
+                            onClick={handleSync}
+                            disabled={syncing}
+                            className={`flex items-center btn hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 flex-1 sm:flex-none justify-center ${
+                                syncing ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                        >
+                            {syncing ? (
+                                <>
+                                    <InlineSpinner color="white" className="mr-2" />
+                                    <span className="hidden sm:inline">Syncing...</span>
+                                    <span className="sm:hidden">Sync...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FiRefreshCw className="mr-2" size={16} />
+                                    <span className="hidden sm:inline">Re-Sync Emails</span>
+                                    <span className="sm:hidden">Sync</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Search Input */}

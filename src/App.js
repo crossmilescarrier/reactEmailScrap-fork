@@ -16,6 +16,9 @@ import ChatMessageDebug from './components/ChatMessageDebug';
 import ChatMessageTest from './components/ChatMessageTest';
 import MediaPreviewTest from './components/MediaPreviewTest';
 import MediaDebugTest from './components/MediaDebugTest';
+import MediaDebug from './components/MediaDebug';
+import ChatMessageDiagnostic from './components/ChatMessageDiagnostic';
+import AdminSettings from './pages/admin/AdminSettings';
 
 
 function App() {
@@ -32,6 +35,8 @@ function App() {
                     <Route path="/test-chat" element={<ChatMessageTest />} />
                     <Route path="/test-media-preview" element={<MediaPreviewTest />} />
                     <Route path="/media-debug" element={<MediaDebugTest />} />
+                    <Route path="/debug-media-test" element={<MediaDebug />} />
+                    <Route path="/chat-diagnostic" element={<ChatMessageDiagnostic />} />
                     
                     {/* Protected Routes */}
                     <Route path="/" element={
@@ -85,6 +90,12 @@ function App() {
                     <Route path="/chats" element={
                       <PrivateRoute>
                         <Chats />
+                      </PrivateRoute>
+                    } />
+
+                    <Route path="/admin/settings" element={
+                      <PrivateRoute>
+                        <AdminSettings />
                       </PrivateRoute>
                     } />
 

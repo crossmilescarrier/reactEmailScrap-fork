@@ -68,7 +68,6 @@ export default function EmailContainer() {
          }
       </>
   }
-
   return (
    <AuthLayout>
          <h2 className="heading">{data.subject ?? 'Unknown Subject'}</h2>

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../layout/AuthLayout';
 import AccountApi from '../../api/AccountApi';
 import toast from 'react-hot-toast';
 import { 
     FiMessageCircle, FiSearch, FiMoreVertical, FiRefreshCw, 
-    FiUser, FiClock, FiArrowLeft 
+    FiUser, FiClock, FiArrowLeft, FiTrash2 
 } from 'react-icons/fi';
 import Loading, { PageLoader, ButtonLoader, ChatLoader, SkeletonLoader, useLoadingStates } from '../../components/Loading';
 import ChatMessage from '../../components/ChatMessage';
@@ -22,6 +22,16 @@ export default function AccountChats() {
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const { setLoading: setSyncLoading, isLoading } = useLoadingStates();
+    
+    // Ref for auto-scrolling to the bottom of messages
+    const messagesEndRef = useRef(null);
+    
+    // Scroll to bottom helper function
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     // Fetch chat list
     const fetchChats = async () => {
@@ -83,23 +93,83 @@ export default function AccountChats() {
         fetchChatMessages(chat._id);
     };
 
-    // Handle sync
+    // Handle sync with better state management
     const handleSync = async () => {
+        console.log('🔄 Starting sync for account:', accountEmail);
         setSyncLoading('sync', true);
+        
         try {
             const response = await AccountApi.syncChats(accountEmail);
+            console.log('✅ Sync response:', response);
             
             if (response.status === true) {
-                toast.success(`Chat sync completed: ${response.data.syncedChats} chats, ${response.data.syncedMessages} messages`);
-                fetchChats(); // Refresh chat list
+                const syncedChats = response.data?.syncedChats || 0;
+                const syncedMessages = response.data?.syncedMessages || 0;
+                toast.success(`Chat sync completed: ${syncedChats} chats, ${syncedMessages} messages`);
+                
+                // Refresh chat list after successful sync
+                await fetchChats();
             } else {
-                toast.error(response.message || "Failed to sync chats");
+                const errorMessage = response.message || response.error || "Failed to sync chats";
+                console.error('❌ Sync failed:', errorMessage);
+                toast.error(errorMessage);
             }
         } catch (error) {
-            console.error("Sync error:", error);
-            toast.error("Failed to sync chats");
+            console.error("❌ Sync error:", error);
+            const errorMessage = error.message || error.toString() || "Failed to sync chats";
+            toast.error(`Sync failed: ${errorMessage}`);
         } finally {
+            // Ensure loading state is always cleared
+            console.log('🔄 Clearing sync loading state');
             setSyncLoading('sync', false);
+        }
+    };
+
+    // Handle clear all chats
+    const handleClearAllChats = async () => {
+        console.log('🗑️ Clear All Chats button clicked for account:', accountEmail);
+        
+        if (!window.confirm('Are you sure you want to clear ALL chats? This action cannot be undone.')) {
+            console.log('❌ User cancelled clear all chats operation');
+            return;
+        }
+        
+        console.log('✅ User confirmed clear all chats operation');
+        setSyncLoading('clearChats', true);
+        
+        try {
+            console.log('🔄 Calling AccountApi.clearAllChats for:', accountEmail);
+            const response = await AccountApi.clearAllChats(accountEmail);
+            console.log('📤 Clear chats API response:', response);
+            
+            if (response.status === true) {
+                console.log('✅ Clear chats successful:', response.data);
+                toast.success(response.message || 'All chats cleared successfully');
+                
+                // Clear local state and refresh
+                console.log('🧹 Clearing local state and refreshing chat list');
+                setChats([]);
+                setActiveChat(null);
+                setMessages([]);
+                await fetchChats(); // Refresh to show empty state
+            } else {
+                console.error('❌ Clear chats failed:', response.message);
+                toast.error(response.message || 'Failed to clear chats');
+            }
+        } catch (error) {
+            console.error('💥 Clear chats error:', error);
+            console.error('💥 Error details:', {
+                message: error.message,
+                status: error.status,
+                data: error.data,
+                response: error.response
+            });
+            
+            const errorMessage = error.message || error.data?.message || 'Failed to clear chats';
+            toast.error(`Clear failed: ${errorMessage}`);
+        } finally {
+            console.log('🔄 Clearing loading state for clearChats');
+            setSyncLoading('clearChats', false);
         }
     };
 
@@ -132,6 +202,16 @@ export default function AccountChats() {
         chat.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Auto-scroll when chat changes or messages update
+    useEffect(() => {
+        if (activeChat && messages.length > 0 && !loadingMessages) {
+            // Small delay to ensure DOM has updated
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }
+    }, [activeChat, messages, loadingMessages]);
 
     useEffect(() => {
         if (accountEmail) {
@@ -169,16 +249,36 @@ export default function AccountChats() {
                                 Back to Threads
                             </button>
                             
-                            <button
-                                onClick={handleSync}
-                                disabled={isLoading('sync')}
-                                className={`p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full transition-colors duration-200 ${
-                                    isLoading('sync') ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                                title="Sync Chats"
-                            >
-                                <FiRefreshCw size={16} className={isLoading('sync') ? 'animate-spin' : ''} />
-                            </button>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={(e) => {
+                                        console.log('🔥🔥🔥 BUTTON CLICKED - Clear All Chats button was clicked!', {
+                                            accountEmail,
+                                            event: e,
+                                            isLoading: isLoading('clearChats')
+                                        });
+                                        handleClearAllChats();
+                                    }}
+                                    disabled={isLoading('clearChats')}
+                                    className={`cursor-pointer p-2 bg-red-100 text-red-600 hover:text-red-700 hover:bg-red-200 rounded-full transition-colors duration-200 ${
+                                        isLoading('clearChats') ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                    title="Clear All Chats"
+                                >
+                                    <FiTrash2 size={16} className={isLoading('clearChats') ? 'animate-pulse' : ''} />
+                                </button>
+                                
+                                <button
+                                    onClick={handleSync}
+                                    disabled={isLoading('sync')}
+                                    className={`p-2 bg-blue-100 text-blue-600 hover:text-blue-700 hover:bg-blue-300 rounded-full transition-colors duration-200 ${
+                                        isLoading('sync') ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                    title="Sync Chats"
+                                >
+                                    <FiRefreshCw size={16} className={isLoading('sync') ? 'animate-spin' : ''} />
+                                </button>
+                            </div>
                         </div>
                         
                         <h1 className="text-xl font-semibold text-gray-900 mb-2">
@@ -202,7 +302,7 @@ export default function AccountChats() {
                     </div>
                     
                     {/* Chat List */}
-                    <div className="flex-1 chatlist  overflow-y-auto max-h-[40vh]">
+                    <div className="flex-1 chatlist  overflow-y-auto max-h-[45vh]">
                         {loading ? (
                             <div className="space-y-3 p-4">
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -305,14 +405,18 @@ export default function AccountChats() {
                                         <p className="text-gray-400">This chat conversation is empty</p>
                                     </div>
                                 ) : (
-                                    messages.map((message, messageIndex) => (
-                                        <ChatMessage
-                                            key={message._id}
-                                            message={{ ...message, chatId: activeChat._id, messageIndex }}
-                                            isOwn={message.from === accountEmail || message.isOwn}
-                                            currentUserEmail={accountEmail}
-                                        />
-                                    ))
+                                    <>
+                                        {messages.map((message, messageIndex) => (
+                                            <ChatMessage
+                                                key={message._id}
+                                                message={{ ...message, chatId: activeChat._id, messageIndex }}
+                                                isOwn={message.from === accountEmail || message.isOwn}
+                                                currentUserEmail={accountEmail}
+                                            />
+                                        ))}
+                                        {/* Auto-scroll anchor */}
+                                        <div ref={messagesEndRef} />
+                                    </>
                                 )}
                             </div>
                             

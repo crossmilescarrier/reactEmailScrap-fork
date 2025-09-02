@@ -107,7 +107,7 @@ export default function AccountItem({ account, fetchAccounts }) {
                     </div>
                 </div>
             </Link>
-            <div className='right-a p-4 sm:p-6 pt-0 sm:pt-6 flex items-center justify-between w-full sm:w-auto border-t sm:border-t-0 border-gray-300 sm:border-0 mt-0'>
+            <div className='right-a !p-4  !flex items-center justify-between w-auto border-t sm:border-t-0 border-gray-300 sm:border-0 mt-0'>
                <div className='flex items-center space-x-3 sm:space-x-2 ml-0 sm:ml-4 me-3'>
                   <button
                      onClick={handleSync}

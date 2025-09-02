@@ -14,7 +14,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
     
     const [previewModal, setPreviewModal] = useState({ isOpen: false, attachments: [], initialIndex: 0 });
     // Determine if message is own - use multiple data sources
-    const isOwnMessage = isOwn ?? message.isOwn ?? message.align === 'right' ?? false;
+    const isOwnMessage = isOwn ?? message.isOwn ?? message.isSentByCurrentUser ?? (message.from === currentUserEmail) ?? message.align === 'right' ?? false;
     
     // Extract sender information from various message formats
     const getSenderData = () => {
@@ -226,7 +226,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                     {/* If no media data, show basic attachment info */}
                                     {!hasMediaData && (
                                         <div className="basic-attachment mb-2">
-                                            <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
                                                 <span className="mr-3 text-2xl">📎</span>
                                                 <div className="flex-1">
                                                     <div className="text-sm font-medium">
@@ -271,7 +271,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                                     </div>
                                                 </div>
                                             ) : null}
-                                            <div className="fallback-attachment hidden items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                            <div className="fallback-attachment hidden items-center p-3 bg-gray-100 rounded-lg">
                                                 <span className="mr-2 text-2xl">🖼️</span>
                                                 <div>
                                                     <div className="text-sm font-medium">{attachment.filename || attachment.name || 'Image'}</div>
@@ -293,17 +293,43 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                       attachment.mimeType?.includes('video') ||
                                       ['mp4', 'webm', 'avi', 'mov', 'wmv'].includes(attachment.filename?.toLowerCase().split('.').pop())) && (
                                         <div className="video-attachment mb-2">
-                                            {(attachment.localPath || attachment.directMediaUrl) ? (
+                                            {(attachment.localPath || attachment.directMediaUrl || attachment.filename) ? (
                                                 <div className="relative">
                                                     <video 
                                                         src={getMediaURL(attachment, message.chatId, message.messageIndex, index)}
                                                         poster={getThumbnailURL(attachment)}
                                                         controls
+                                                        preload="metadata"
                                                         className="max-w-full h-auto rounded-lg shadow-md"
                                                         style={{ maxHeight: '300px' }}
+                                                        onLoadedData={() => console.log(`✅ Video loaded: ${attachment.filename}`)}
+                                                        onError={(e) => {
+                                                            console.error(`❌ Video failed to load: ${attachment.filename}`, e.target.src);
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextElementSibling.style.display = 'flex';
+                                                        }}
                                                     >
                                                         Your browser does not support video playback.
                                                     </video>
+                                                    {/* Video error fallback */}
+                                                    <div className="hidden items-center p-3 bg-gray-100 rounded-lg">
+                                                        <span className="mr-2 text-2xl">🎥</span>
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-medium">{attachment.filename || attachment.name || 'Video'}</div>
+                                                            <div className="text-xs text-red-500 mt-1">Failed to load video</div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {attachment.fileSize ? Math.round(attachment.fileSize / 1024 / 1024) + ' MB' : 'Unknown size'}
+                                                                {attachment.duration && ` • ${Math.floor(attachment.duration / 60)}:${String(Math.floor(attachment.duration % 60)).padStart(2, '0')}`}
+                                                            </div>
+                                                        </div>
+                                                        <a 
+                                                            href={getMediaURL(attachment, message.chatId, message.messageIndex, index)}
+                                                            download={attachment.filename || attachment.name}
+                                                            className="ml-3 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                                                        >
+                                                            Download
+                                                        </a>
+                                                    </div>
                                                     <button
                                                         onClick={() => openMediaPreview(message.attachments, index)}
                                                         className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-1 rounded hover:bg-opacity-70 transition-opacity"
@@ -313,7 +339,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                                <div className="flex items-center p-3 bg-gray-100 rounded-lg">
                                                     <span className="mr-2 text-2xl">🎥</span>
                                                     <div>
                                                         <div className="text-sm font-medium">{attachment.filename || attachment.name || 'Video'}</div>
@@ -321,6 +347,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                                             Video • {attachment.fileSize ? Math.round(attachment.fileSize / 1024 / 1024) + ' MB' : 'Unknown size'}
                                                             {attachment.duration && ` • ${Math.floor(attachment.duration / 60)}:${String(Math.floor(attachment.duration % 60)).padStart(2, '0')}`}
                                                         </div>
+                                                        <div className="text-xs text-orange-500 mt-1">📥 Not processed yet - trigger sync to download</div>
                                                     </div>
                                                 </div>
                                             )}
@@ -332,7 +359,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                       attachment.mimeType?.includes('audio') ||
                                       ['mp3', 'wav', 'ogg', 'm4a', 'aac'].includes(attachment.filename?.toLowerCase().split('.').pop())) && (
                                         <div className="audio-attachment mb-2">
-                                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                            <div className="bg-gray-50 rounded-lg p-3">
                                                 <div className="flex items-center mb-2">
                                                     <span className="mr-2 text-xl">🎵</span>
                                                     <div className="flex-1">
@@ -368,7 +395,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                        (attachment.isVideo || attachment.mediaType === 'video' || attachment.mimeType?.includes('video')) ||
                                        (attachment.isAudio || attachment.mediaType === 'audio' || attachment.mimeType?.includes('audio'))) && (
                                         <div className="file-attachment mb-2">
-                                            <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                            <div className="flex items-center p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                                                 <span className="mr-3 text-2xl">
                                                     {(() => {
                                                         const fileName = attachment.filename || attachment.name || '';

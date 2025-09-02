@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { 
    FiArrowLeft,   FiPaperclip, FiDownload, 
    FiChevronDown, FiChevronRight, FiCornerUpLeft, FiUsers, FiShare,
-    FiMoreVertical, FiEye, FiMaximize2
+    FiMoreVertical, FiEye, FiMaximize2, FiX
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { PageLoader } from '../../components/Spinner';
@@ -97,148 +97,280 @@ export default function ThreadDetail() {
    // Handle authenticated download
    const handleDownload = async (attachment) => {
       try {
-         const response = await Api.get(`/attachment/${attachment._id || attachment.filename}/download`, {
-            responseType: 'blob',
-         });
+         // Use processed downloadUrl from backend if available, otherwise fallback to constructed URL
+         let downloadUrl;
+         if (attachment.downloadUrl) {
+            downloadUrl = attachment.downloadUrl;
+         } else {
+            // Fallback for legacy attachments
+            const filename = attachment.localPath ? attachment.localPath.split('/').pop() : attachment.filename;
+            downloadUrl = `/api/media/email-attachments/${filename}?download=${encodeURIComponent(attachment.filename || filename)}`;
+         }
          
-         // Create blob URL and trigger download
-         const url = window.URL.createObjectURL(new Blob([response.data]));
+         // Create a temporary link and trigger download
          const link = document.createElement('a');
-         link.href = url;
+         link.href = downloadUrl;
          link.setAttribute('download', attachment.filename || 'download');
          document.body.appendChild(link);
          link.click();
          link.remove();
-         window.URL.revokeObjectURL(url);
+         
+         console.log('✅ Downloaded attachment:', attachment.filename);
       } catch (error) {
          console.error('Download failed:', error);
          toast.error('Failed to download attachment');
       }
    };
 
-   // Get authenticated image URL for preview
-   const getAuthenticatedImageUrl = async (attachment) => {
-      try {
-         const response = await Api.get(`/attachment/${attachment._id || attachment.filename}/download`, {
-            responseType: 'blob',
-         });
-         const url = window.URL.createObjectURL(new Blob([response.data]));
-         return url;
-      } catch (error) {
-         console.error('Failed to load image:', error);
+   // Get attachment URL using backend-processed URLs
+   const getAttachmentUrl = (attachment) => {
+      console.log('🔍 getAttachmentUrl called with attachment:', attachment);
+      
+      if (!attachment) {
+         console.error('❌ No attachment provided');
          return null;
       }
+      
+      // Use processed previewUrl from backend if available
+      if (attachment.previewUrl) {
+         console.log('✅ Using backend-processed previewUrl:', attachment.previewUrl);
+         return attachment.previewUrl;
+      }
+      
+      // Fallback for legacy attachments - construct URL
+      let filename = null;
+      if (attachment.localPath && typeof attachment.localPath === 'string') {
+         filename = attachment.localPath.split('/').pop();
+      } else if (attachment.filename) {
+         filename = attachment.filename;
+      }
+      
+      if (!filename) {
+         console.error('❌ No filename could be determined from attachment:', attachment);
+         return null;
+      }
+      
+      const url = `/api/media/email-attachments/${encodeURIComponent(filename)}`;
+      console.log('⚠️ Using fallback URL:', url);
+      return url;
    };
 
-   // Render attachment preview
-   const AttachmentPreview = ({ attachment }) => {
-      const [showPreview, setShowPreview] = useState(false);
-      const [imageUrl, setImageUrl] = useState(null);
-      const [loadingImage, setLoadingImage] = useState(false);
-      const isImage = attachment.mimeType?.startsWith('image/');
-      const isPdf = attachment.mimeType?.includes('pdf');
-      const isText = attachment.mimeType?.startsWith('text/');
+   // Get authenticated image URL for preview
+   const getAuthenticatedImageUrl = (attachment) => {
+      return getAttachmentUrl(attachment);
+   };
 
-      const handlePreviewToggle = async () => {
-         if (!showPreview && isImage && !imageUrl) {
-            setLoadingImage(true);
-            const url = await getAuthenticatedImageUrl(attachment);
-            setImageUrl(url);
-            setLoadingImage(false);
-         }
-         setShowPreview(!showPreview);
+   // Render attachment preview with Gmail-like behavior
+   const AttachmentPreview = ({ attachment }) => {
+      const [imageError, setImageError] = useState(false);
+      const [fullscreen, setFullscreen] = useState(false);
+      const isImage = attachment.isImage || attachment.mimeType?.startsWith('image/');
+      const isPdf = attachment.isPdf || attachment.mimeType?.includes('pdf');
+      const isVideo = attachment.isVideo || attachment.mimeType?.startsWith('video/');
+      const isAudio = attachment.isAudio || attachment.mimeType?.startsWith('audio/');
+      
+      // Get the preview URL from processed attachment
+      const previewUrl = getAttachmentUrl(attachment);
+      
+      const handleFullscreen = () => {
+         setFullscreen(true);
+      };
+      
+      const handleCloseFullscreen = () => {
+         setFullscreen(false);
+      };
+      
+      // Handle image load errors
+      const handleImageError = () => {
+         console.error('Failed to load image:', attachment.filename);
+         setImageError(true);
+      };
+      
+      const handleImageLoad = () => {
+         console.log('✅ Image loaded successfully:', attachment.filename);
+         setImageError(false);
       };
 
-      // Cleanup blob URL on unmount
-      useEffect(() => {
-         return () => {
-            if (imageUrl) {
-               window.URL.revokeObjectURL(imageUrl);
-            }
-         };
-      }, [imageUrl]);
-
       return (
-         <div className='bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200'>
-            <div className='p-4'>
-               <div className='flex items-start justify-between'>
-                  <div className='flex items-center flex-1'>
-                     <div className='text-2xl mr-3'>
-                        {getAttachmentIcon(attachment.mimeType, attachment.filename)}
-                     </div>
-                     <div className='flex-1'>
-                        <div className='text-sm font-medium text-gray-900 truncate'>
-                           {attachment.filename || 'Unknown filename'}
-                        </div>
-                        <div className='text-xs text-gray-500 mt-1'>
-                           {attachment.mimeType || 'Unknown type'} • {formatFileSize(attachment.size)}
-                        </div>
-                     </div>
-                  </div>
-                  <div className='flex items-center space-x-2 ml-4'>
-                     {(isImage || isPdf) && (
-                        <button 
-                           onClick={handlePreviewToggle}
-                           className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors'
-                           title='Preview'
-                           disabled={loadingImage}
-                        >
-                           {loadingImage ? (
-                              <div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin'></div>
-                           ) : (
-                              <FiEye size={16} />
-                           )}
-                        </button>
-                     )}
-                     <button 
-                        onClick={() => handleDownload(attachment)}
-                        className='p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full transition-colors'
-                        title={`Download ${attachment.filename}`}
-                     >
-                        <FiDownload size={16} />
-                     </button>
-                  </div>
-               </div>
+         <>
+            <div className='bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200'>
                
-               {/* Preview */}
-               {showPreview && (
-                  <div className='mt-4 border-t border-gray-100 pt-4'>
-                     {isImage && (
-                        <div className='max-h-64 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center'>
-                           {imageUrl ? (
-                              <img 
-                                 src={imageUrl}
-                                 alt={attachment.filename}
-                                 className='max-w-full max-h-full object-contain'
-                                 onError={() => {
-                                    toast.error('Failed to load image preview');
+               <div className='p-4'>
+                  <div className='flex items-start justify-between'>
+                     <div className='flex items-center flex-1'>
+                        <div className='text-2xl mr-3'>
+                           {getAttachmentIcon(attachment.mimeType, attachment.filename)}
+                        </div>
+                        <div className='flex-1'>
+                           <div className='text-sm font-medium text-gray-900 truncate'>
+                              {attachment.filename || 'Unknown filename'}
+                           </div>
+                           {/* <div className='text-xs text-gray-500 mt-1'>
+                              {attachment.mimeType || 'Unknown type'} • {formatFileSize(attachment.size)}
+                           </div> */}
+                        </div>
+                     </div>
+                     <div className='flex items-center space-x-2 ml-4'>
+                        {isImage && !imageError && (
+                           <button 
+                              onClick={handleFullscreen}
+                              className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors'
+                              title='View fullscreen'
+                           >
+                              <FiMaximize2 size={16} />
+                           </button>
+                        )}
+                        <button 
+                           onClick={() => handleDownload(attachment)}
+                           className='p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full transition-colors'
+                           title={`Download ${attachment.filename}`}
+                        >
+                           <FiDownload size={16} />
+                        </button>
+                     </div>
+                  </div>
+                  
+                  {/* Error state for images */}
+                  {isImage && imageError && (
+                     <div className='mt-3 p-3 bg-red-50 border border-red-200 rounded text-center'>
+                        <div className='text-red-600 text-sm'>
+                           Unable to preview image
+                        </div>
+                        <div className='text-red-500 text-xs mt-1'>
+                           {attachment.filename}
+                        </div>
+                     </div>
+                  )}
+                  
+               {/* PDF preview - Gmail style embedded viewer */}
+                  {isPdf && previewUrl && (
+                     <div className='mt-3'>
+                        <div className='bg-gray-100 rounded-lg overflow-hidden'>
+                           {/* <div className='bg-gray-200 px-4 py-2 flex items-center justify-between text-sm text-gray-700'>
+                              <span className='flex items-center'>
+                                 <span className='mr-2'>📄</span>
+                                 PDF Preview
+                              </span>
+                              <div className='flex items-center space-x-2'>
+                                 <button 
+                                    onClick={() => handleDownload(attachment)}
+                                    className='inline-flex items-center px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
+                                 >
+                                    <FiDownload className='mr-1' size={10} />
+                                    Download
+                                 </button>
+                                 <button 
+                                    onClick={() => window.open(previewUrl, '_blank')}
+                                    className='inline-flex items-center px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors'
+                                 >
+                                    <FiMaximize2 className='mr-1' size={10} />
+                                    Open
+                                 </button>
+                              </div>
+                           </div> */}
+                           <div className='relative' onClick={() => window.open(previewUrl, '_blank')}>
+                              {/* <div className='hidden w-full h-64 bg-gray-100 flex items-center justify-center text-gray-500 text-sm'>
+                                 <div className='text-center'>
+                                    <div className='mb-2'>PDF preview not available</div>
+                                    <button 
+                                       onClick={() => handleDownload(attachment)}
+                                       className='inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
+                                    >
+                                       <FiDownload className='mr-1' size={12} />
+                                       Download PDF
+                                    </button>
+                                 </div>
+                              </div> */}
+                              <iframe 
+                                 src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                                 className='border w-full max-h-[140px] rounded-xl'
+                                 title={`PDF Preview: ${attachment.filename}`}
+                                 onError={(e) => {
+                                    console.error('PDF iframe error:', e);
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'block';
                                  }}
                               />
-                           ) : (
-                              <div className='text-gray-500 text-sm p-4'>
-                                 {loadingImage ? 'Loading preview...' : 'Preview not available'}
-                              </div>
-                           )}
-                        </div>
-                     )}
-                     {isPdf && (
-                        <div className='bg-gray-50 rounded-lg p-4 text-center'>
-                           <div className='text-gray-600 text-sm mb-2'>
-                              PDF Preview (Click download to view full document)
                            </div>
-                           <button 
-                              onClick={() => handleDownload(attachment)}
-                              className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors'
-                           >
-                              <FiMaximize2 className='mr-2' size={14} />
-                              Download PDF
-                           </button>
                         </div>
-                     )}
+                     </div>
+                  )}
+               </div>
+               {/* Image preview by default - Gmail style */}
+               {isImage && !imageError && previewUrl && (
+                  <div className='relative'>
+                     <img 
+                        src={previewUrl}
+                        alt={attachment.filename}
+                        className='w-full max-h-[140px] object-contain bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors'
+                        onError={handleImageError}
+                        onLoad={handleImageLoad}
+                        onClick={handleFullscreen}
+                        title='Click to view full size'
+                     />
+                     <div className='absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-1.5 opacity-0 hover:opacity-100 transition-opacity'>
+                        <FiMaximize2 className='text-white' size={14} />
+                     </div>
                   </div>
                )}
+               
+               {/* Video preview */}
+               {isVideo && previewUrl && (
+                  <div className='relative bg-gray-900'>
+                     <video 
+                        src={previewUrl}
+                        className='w-full max-h-[140px] object-cover'
+                        controls
+                        preload='metadata'
+                     >
+                        Your browser does not support the video tag.
+                     </video>
+                  </div>
+               )}
+               
+               {/* Audio preview */}
+               {isAudio && previewUrl && (
+                  <div className='p-4 bg-gray-50'>
+                     <audio 
+                        src={previewUrl}
+                        className='w-full'
+                        controls
+                        preload='metadata'
+                     >
+                        Your browser does not support the audio tag.
+                     </audio>
+                  </div>
+               )}
+               
+               
             </div>
-         </div>
+            
+            {/* Fullscreen modal for images */}
+            {fullscreen && isImage && previewUrl && (
+               <div 
+                  className='fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4'
+                  onClick={handleCloseFullscreen}
+               >
+                  <div className='relative w-full h-full flex justify-center items-center'>
+                     <img 
+                        src={previewUrl}
+                        alt={attachment.filename}
+                        className='max-w-full max-h-full object-contain'
+                        onClick={(e) => e.stopPropagation()}
+                     />
+                     <button 
+                        onClick={handleCloseFullscreen}
+                        className='absolute top-4 right-4 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2 transition-colors'
+                     >
+                        <FiX size={24} />
+                     </button>
+                     <div className='absolute bottom-4 left-4 text-white bg-black bg-opacity-50 px-3 py-2 rounded text-sm'>
+                        {attachment.filename}
+                     </div>
+                  </div>
+               </div>
+            )}
+         </>
       );
    };
 
@@ -365,7 +497,7 @@ export default function ThreadDetail() {
                               {email.attachments.length} attachment{email.attachments.length > 1 ? 's' : ''}
                            </span>
                         </div>
-                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'>
                            {email.attachments.map((attachment, attachIndex) => (
                               <AttachmentPreview 
                                  key={attachIndex} 

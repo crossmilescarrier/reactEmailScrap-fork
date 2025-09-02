@@ -111,7 +111,9 @@ class AccountApi {
   // Get chats for account
   static async getChats(accountEmail, page = 1, limit = 20) {
     try {
-      const response = await Api.get(`/account/${accountEmail}/chats?page=${page}&limit=${limit}`);
+      // Add cache-busting parameter to ensure fresh data
+      const cacheBuster = Date.now();
+      const response = await Api.get(`/account/${accountEmail}/chats?page=${page}&limit=${limit}&_=${cacheBuster}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -152,6 +154,26 @@ class AccountApi {
   static async toggleScheduler(action) {
     try {
       const response = await Api.post('/scheduler/toggle', { action });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+
+  // Clear all emails for an account
+  static async clearAllEmails(accountEmail) {
+    try {
+      const response = await Api.delete(`/account/${accountEmail}/clear-all-emails`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+
+  // Clear all chats for an account
+  static async clearAllChats(accountEmail) {
+    try {
+      const response = await Api.delete(`/account/${accountEmail}/clear-all-chats`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
