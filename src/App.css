@@ -61,7 +61,13 @@ select{-webkit-appearance:none;-moz-appearance:none;appearance:none;}
   transform: translateX(0);
   transition: transform 0.3s ease-in-out;
 }
+.row-col {
+  flex-direction: row !important;
+}
 
+.flex.items-center.justify-between:not(.flex-wrap) {
+  flex-direction: row !important;
+}
 
 /* .gmail_quote.gmail_quote_container {
   display: none;

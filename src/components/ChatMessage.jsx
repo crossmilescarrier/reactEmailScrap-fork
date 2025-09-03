@@ -53,23 +53,84 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
         return name;
     };
     
-    // Format time for chat display
+    // Format date and time for chat display
     const formatTime = () => {
-        // Use new time format if available
+        // Use new smart time format if available (from backend)
+        if (message.time?.smart) {
+            return message.time.smart;
+        }
+        
+        // Fallback to short if smart is not available
         if (message.time?.short) {
             return message.time.short;
         }
         
-        // Legacy time formatting
-        const dateStr = message.date || message.timestamp;
+        // Get date string from various message properties
+        const dateStr = message.date || message.timestamp || message.createTime;
         if (!dateStr) return '';
         
-        const date = new Date(dateStr);
-        return date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
-        });
+        // Check if this looks like an already-formatted time string from backend
+        // (like "12:40 AM", "Today 2:30 PM", "Yesterday 10:15 AM", "Wed 9:45 AM", "Dec 25 3:20 PM")
+        if (typeof dateStr === 'string' && 
+            (dateStr.includes('AM') || dateStr.includes('PM') || 
+             dateStr.includes('Today') || dateStr.includes('Yesterday') || 
+             dateStr.match(/^\d{1,2}:\d{2}\s(AM|PM)$/) ||
+             dateStr.match(/^\w{3}\s\d{1,2}:\d{2}\s(AM|PM)$/) ||
+             dateStr.match(/^\w{3}\s\d{1,2}\s\d{1,2}:\d{2}\s(AM|PM)$/))) {
+            // Already formatted by backend, return as-is
+            return dateStr;
+        }
+        
+        // If it's still a raw date (ISO string or Date object), format it
+        // This is a fallback for any dates that weren't pre-formatted
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) {
+                return dateStr; // Return original if parsing fails
+            }
+            
+            const now = new Date();
+            
+            // Check if message is from today
+            const isToday = date.toDateString() === now.toDateString();
+            
+            // Check if message is from yesterday
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const isYesterday = date.toDateString() === yesterday.toDateString();
+            
+            // Check if message is from this week (within last 7 days)
+            const weekAgo = new Date(now);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const isThisWeek = date > weekAgo;
+            
+            const timeString = date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            
+            if (isToday) {
+                return `Today ${timeString}`;
+            } else if (isYesterday) {
+                return `Yesterday ${timeString}`;
+            } else if (isThisWeek) {
+                // Show day name for messages within this week
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                return `${dayName} ${timeString}`;
+            } else {
+                // Show full date for older messages
+                const dateString = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+                return `${dateString} ${timeString}`;
+            }
+        } catch (error) {
+            console.warn('Date formatting error in ChatMessage:', error, 'for input:', dateStr);
+            return dateStr; // Return original string if any error occurs
+        }
     };
     
     // Get avatar color based on sender name
@@ -229,7 +290,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                             <div className="flex items-center p-3 bg-gray-100 rounded-lg">
                                                 <span className="mr-3 text-2xl">📎</span>
                                                 <div className="flex-1">
-                                                    <div className="text-sm font-medium">
+                                                    <div className="text-sm font-medium ">
                                                         {attachment.filename || attachment.name || attachment.contentName || 'Unknown file'}
                                                     </div>
                                                     <div className="text-xs text-gray-500 mt-1">
@@ -448,7 +509,7 @@ export default function ChatMessage({ message, isOwn = null, currentUserEmail = 
                                                     }
                                                 </span>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-medium truncate">
+                                                    <div className="text-sm font-medium truncate text-black">
                                                         {attachment.filename || attachment.name || 'Unknown file'}
                                                     </div>
                                                     <div className="text-xs text-gray-500 mt-1">

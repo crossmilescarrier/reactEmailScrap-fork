@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Router } from 'react-router-dom';
 import AuthLayout from '../../layout/AuthLayout';
 import AccountApi from '../../api/AccountApi';
 import toast from 'react-hot-toast';
@@ -91,6 +91,10 @@ export default function AccountChats() {
         setActiveChat(chat);
         navigate(`/account/${accountEmail}/chats/${chat._id}`);
         fetchChatMessages(chat._id);
+        setIsPanelShow(true);
+        if(window.innerWidth < 768){
+            setHideLists(true);
+        }
     };
 
     // Handle sync with better state management
@@ -173,27 +177,69 @@ export default function AccountChats() {
         }
     };
 
-    // Format date for sidebar
+    // Format date for sidebar - now just returns backend-formatted string
+    // Backend already handles all date formatting with proper context
     const formatSidebarDate = (dateString) => {
         if (!dateString) return '';
-        const date = new Date(dateString);
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         
-        if (messageDate.getTime() === today.getTime()) {
-            return date.toLocaleTimeString('en-US', { 
+        // Check if this looks like an already-formatted date string from backend
+        // (like "Aug 24 01:41 AM", "Yesterday 10:45 PM", "10:45 PM")
+        if (typeof dateString === 'string' && 
+            (dateString.includes('AM') || dateString.includes('PM') || 
+             dateString.includes('Yesterday') || dateString.match(/^\d{1,2}:\d{2}\s(AM|PM)$/))) {
+            // Already formatted by backend, return as-is
+            return dateString;
+        }
+        
+        // If it's still a raw date (ISO string or Date object), format it
+        // This is a fallback for any dates that weren't pre-formatted
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return dateString; // Return original if parsing fails
+            }
+            
+            const now = new Date();
+            
+            // Check if message is from today
+            const isToday = date.toDateString() === now.toDateString();
+            
+            // Check if message is from yesterday
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const isYesterday = date.toDateString() === yesterday.toDateString();
+            
+            // Check if message is from this week (within last 7 days)
+            const weekAgo = new Date(now);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const isThisWeek = date > weekAgo;
+            
+            const timeString = date.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
                 hour12: true 
             });
-        } else if (messageDate.getTime() === today.getTime() - (24 * 60 * 60 * 1000)) {
-            return 'Yesterday';
-        } else {
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric'
-            });
+            
+            if (isToday) {
+                return timeString; // Just show time for today's messages
+            } else if (isYesterday) {
+                return `Yesterday ${timeString}`;
+            } else if (isThisWeek) {
+                // Show day name and time for messages within this week
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                return `${dayName} ${timeString}`;
+            } else {
+                // Show full date and time for older messages
+                const dateString = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+                return `${dateString} ${timeString}`;
+            }
+        } catch (error) {
+            console.warn('Date formatting error:', error, 'for input:', dateString);
+            return dateString; // Return original string if any error occurs
         }
     };
 
@@ -219,6 +265,31 @@ export default function AccountChats() {
         }
     }, [accountEmail]);
 
+    const [hideLists, setHideLists] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isPanelShow, setIsPanelShow] = useState(false);
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setIsMobile(true);
+            } else {
+                setIsMobile(false);
+                setIsPanelShow(true);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    const getBack = () => {
+        setIsPanelShow(false);
+        navigate(`/account/${accountEmail}/chats`);
+        setHideLists(false);
+    };
+
     if (loading) {
         return (
             <AuthLayout>
@@ -235,12 +306,10 @@ export default function AccountChats() {
 
     return (
         <AuthLayout>
-            <div className="flex border rounded-3xl overflow-hidden">
-                {/* Sidebar - Chat List */}
-                <div className="w-1/3 bg-gray-100 rounded-3xl border-r border-gray-200 flex flex-col">
-                    {/* Header */}
+            <div className={`flex border rounded-3xl overflow-hidden`}>
+                <div className={`${hideLists ? 'hidden' : ''} w-full md:w-1/3 bg-gray-100 rounded-3xl border-r border-gray-200 flex flex-col `}>
                     <div className="px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex row-col items-center justify-between mb-4">
                             <button
                                 onClick={() => navigate(`/account/${accountEmail}/threads/inbox`)}
                                 className="inline-flex items-center text-blue-600 hover:text-blue-700"
@@ -281,8 +350,8 @@ export default function AccountChats() {
                             </div>
                         </div>
                         
-                        <h1 className="text-xl font-semibold text-gray-900 mb-2">
-                            💬 Chats
+                        <h1 className="text-xl flex items-center font-semibold text-gray-900 mb-2">
+                            💬 <p className='ms-2'>Chats</p>
                         </h1>
                         <p className="text-sm text-gray-600 mb-4">
                             {account?.email}
@@ -301,8 +370,7 @@ export default function AccountChats() {
                         </div>
                     </div>
                     
-                    {/* Chat List */}
-                    <div className="flex-1 chatlist  overflow-y-auto max-h-[45vh]">
+                    <div className={`flex-1 chatlist  overflow-y-auto md:max-h-[45vh]`}>
                         {loading ? (
                             <div className="space-y-3 p-4">
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -318,7 +386,7 @@ export default function AccountChats() {
                             </div>
                         ) : (
                             filteredChats.map((chat) => (
-                                <div
+                                <div 
                                     key={chat._id}
                                     onClick={() => handleChatSelect(chat)}
                                     className={`px-6 py-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
@@ -365,30 +433,29 @@ export default function AccountChats() {
                         )}
                     </div>
                 </div>
-                
+
                 {/* Main Panel - Chat Messages */}
-                <div className="flex-1 flex flex-col chal panel  max-h-[70vh] overflow-y-auto ">
+                <div className={`flex-1 flex flex-col chat-panel max-h-[80vh] md:max-h-[70vh] overflow-y-auto ${isPanelShow ? '' : 'hidden'}`}>
                     {activeChat ? (
                         <>
                             {/* Chat Header */}
-                            <div className="bg-white sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium">
-                                            {activeChat.avatar}
-                                        </div>
-                                        <div>
-                                            <h2 className="text-lg font-semibold text-gray-900">
-                                                {activeChat.title}
-                                            </h2>
-                                            {activeChat.isGroup && (
-                                                <p className="text-sm text-gray-600">
-                                                    {activeChat.participants.length} participants
-                                                </p>
-                                            )}
-                                        </div>
+                            <div className="bg-white row-col !items-center flex  justify-between font-bold sticky top-0 bg-white z-10 p-4 border-b border-gray-200">
+                                <div className="flex  items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium">
+                                        {activeChat.avatar}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-semibold text-gray-900">
+                                            {activeChat.title}
+                                        </h2>
+                                        {activeChat.isGroup && (
+                                            <p className="text-sm text-gray-600">
+                                                {activeChat.participants.length} participants
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
+                                <button onClick={getBack} className="md:hidden text-blue-500 hover:underline">Back</button>
                             </div>
                             
                             {/* Messages Area */}

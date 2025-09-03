@@ -80,7 +80,7 @@ export default function AuthLayout({children, heading}) {
             </div>
           </header>
           <div className="content  w-full " >
-            <div className="container py-12">
+            <div className="container  py-4 sm:py-6 md:py-12">
               {children}  
             </div>
             <CheckLogin />
