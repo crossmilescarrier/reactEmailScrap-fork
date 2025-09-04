@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "carrier-frontend",
   "builds": [
     {
       "src": "package.json",
@@ -10,6 +9,13 @@
       }
     }
   ],
+  "build": {
+    "env": {
+      "CI": "false",
+      "GENERATE_SOURCEMAP": "false",
+      "ESLINT_NO_DEV_ERRORS": "true"
+    }
+  },
   "routes": [
     {
       "src": "/static/(.*)",
