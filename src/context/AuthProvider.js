@@ -1,6 +1,4 @@
 
-
-
 import { createContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 export const UserContext = createContext(); 
@@ -10,7 +8,6 @@ export default function UserContextProvider(props) {
   const [company, setcompany] = useState(null);
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
-
   // Check for existing authentication on app load
   useEffect(() => {
     const initializeAuth = async () => {
