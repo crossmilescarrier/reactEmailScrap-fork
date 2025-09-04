@@ -1,6 +1,6 @@
 import axios from 'axios';
-const APP_URL_LIVE = "http://localhost:8080";
-const APP_URL_LOCAL = "http://localhost:8080";
+const APP_URL_LIVE = "http://localhost:5001";
+const APP_URL_LOCAL = "http://localhost:5001";
 
 function getToken(){
   const data = localStorage && localStorage.getItem('token');
