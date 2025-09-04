@@ -77,7 +77,7 @@ export default function Login() {
               <div className="w-full py-8 max-w-[390px] lg:max-w-[600px] m-auto  lg:py-0 px-8 lg:px-5   text-slate-500">
                 <div className="flex items-center justify-center">
                   <Link to="/" className="text-3xl font-mono font-bold  text-red-500 drunk lowercase">
-                    {/* <Logotext /> */}
+                    <Logotext />
                   </Link>
                 </div>
                 <p className="text-black text-lg text-center mb-2 mt-6 ">Enter your credentials to login to your account </p>
