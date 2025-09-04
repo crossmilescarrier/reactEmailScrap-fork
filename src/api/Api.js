@@ -7,7 +7,7 @@ function getToken(){
 }
 const host = window.location.host;
 let Api = axios.create({
-  baseURL: host === 'localhost:3000' ? APP_URL_LOCAL : process.env.URL,
+  baseURL: host === 'localhost:3000' ? APP_URL_LOCAL : (process.env.URL || APP_URL_LIVE),
   headers: {
     'Accept': 'application/json',
     'Authorization': `Bearer ${getToken()}`,
