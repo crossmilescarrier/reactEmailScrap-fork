@@ -324,7 +324,7 @@ const MediaDebug = () => {
                         <li>Go to the Console tab</li>
                         <li>Look for any error messages related to media loading</li>
                         <li>Check the Network tab to see if media requests are failing</li>
-                        <li>Verify that the backend server is running on localhost:8080</li>
+                        <li>Verify that the backend server is running on localhost:5001</li>
                         <li>Check that CORS is properly configured</li>
                     </ul>
                 </div>
