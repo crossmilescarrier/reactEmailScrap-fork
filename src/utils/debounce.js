@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-
 /**
  * Debounce function to limit the rate at which a function can fire
  * Useful for search inputs to prevent excessive API calls
- * 
  * @param {Function} func - The function to debounce
  * @param {number} delay - The delay in milliseconds (default: 300ms)
  * @returns {Function} - The debounced function
@@ -12,10 +10,7 @@ export const debounce = (func, delay = 700) => {
   let timeoutId;
   
   return (...args) => {
-    // Clear the previous timeout if it exists
     clearTimeout(timeoutId);
-    
-    // Set a new timeout
     timeoutId = setTimeout(() => {
       func.apply(null, args);
     }, delay);
