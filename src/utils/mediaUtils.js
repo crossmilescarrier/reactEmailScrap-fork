@@ -1,6 +1,8 @@
 // Media URL utilities
 
-const APP_URL_LIVE = "http://localhost:5001";
+
+const APP_URL_LIVE = "https://cmcemail.logistikore.com";
+
 const APP_URL_LOCAL = "http://localhost:5001";
 const PROXY_URL = "http://localhost:5001";
 
