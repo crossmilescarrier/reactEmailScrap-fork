@@ -9,7 +9,7 @@ async function testApiEndpoints() {
         // Test the regular API endpoint (used by frontend)
         console.log('1. Testing /account/:accountEmail/chats endpoint (frontend uses this):');
         try {
-            const response1 = await fetch(`http://localhost:8080/account/${accountEmail}/chats?limit=10`);
+            const response1 = await fetch(`http://localhost:5001/account/${accountEmail}/chats?limit=10`);
             const data1 = await response1.json();
             
             if (data1.status) {
@@ -30,7 +30,7 @@ async function testApiEndpoints() {
         
         console.log('\n2. Testing /test/account/:accountEmail/chats endpoint (our test endpoint):');
         try {
-            const response2 = await fetch(`http://localhost:8080/test/account/${accountEmail}/chats`);
+            const response2 = await fetch(`http://localhost:5001/test/account/${accountEmail}/chats`);
             const data2 = await response2.json();
             
             if (data2.status) {
@@ -52,7 +52,7 @@ async function testApiEndpoints() {
         console.log('\n3. Testing with authentication (if needed):');
         // Check if the frontend endpoint requires authentication
         try {
-            const response3 = await fetch(`http://localhost:8080/account/${accountEmail}/chats?limit=10`, {
+            const response3 = await fetch(`http://localhost:5001/account/${accountEmail}/chats?limit=10`, {
                 headers: {
                     'Authorization': 'Bearer fake-token'
                 }
