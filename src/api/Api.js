@@ -1,5 +1,5 @@
 import axios from 'axios';
-const APP_URL_LIVE = "https://cmcemail.logistikore.com/api";
+const APP_URL_LIVE = "https://cmcemail.logistikore.com";
 const APP_URL_LOCAL = "http://localhost:5001";
 function getToken(){
   const data = localStorage && localStorage.getItem('token');
