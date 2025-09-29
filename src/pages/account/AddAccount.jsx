@@ -58,6 +58,7 @@ export default function AddAccount({item, fetchLists, classes, text}){
           setData({
             email:  "",
           });
+          window.location.reload();
           setEmailError("");
         } else {
           toast.error(response.message);
