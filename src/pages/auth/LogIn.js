@@ -55,10 +55,8 @@ export default function Login() {
       return (
         <>
         <form onSubmit={handleLogin} >
-            {inputFields.map((field, index) => (
-              <>
-              <input required key={index} name={field.name} onChange={handleinput} type={field.type} placeholder={field.label} className="input" />
-              </>
+            {inputFields.map((field) => (
+              <input required key={field.name} name={field.name} onChange={handleinput} type={field.type} placeholder={field.label} className="input" />
             ))}
             <div className="mt-2 flex justify-center">
               <button type="submit" onClick={handleLogin} className="btn lg mt-6 px-[50px] w-full lg:w-auto font-bold">{loading ? "Logging in..." : "Submit"}</button>

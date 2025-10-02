@@ -134,7 +134,7 @@ export default function AccountThreads() {
                     
                     // Merge and sort threads by date (most recent first)
                     const allThreads = [...inboxResponse.data.threads, ...sentResponse.data.threads]
-                        .sort((a, b) => new Date(b.date) - new Date(a.date));
+                        .sort((a, b) => new Date(b.latestEmailDate || b.date) - new Date(a.latestEmailDate || a.date));
                     
                     setThreads(allThreads);
                     
@@ -245,7 +245,8 @@ export default function AccountThreads() {
     const formatDate = (dateString) => {
         if (!dateString) return 'No date';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+        if (isNaN(date.getTime())) return 'No date';
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',

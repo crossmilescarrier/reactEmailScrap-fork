@@ -5,7 +5,8 @@ export default function ThreadEmailItem({thread}) {
    const formatDate = (dateString) => {
         if (!dateString) return 'No date';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+        if (isNaN(date.getTime())) return 'No date';
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -52,7 +53,8 @@ export default function ThreadEmailItem({thread}) {
                      </div>
                      <div className='flex items-center'>
                            <FiClock className="mr-1" size={14} />
-                           <span>{formatDate(thread.date)}</span>
+                           {/* Use latestEmailDate if available, fallback to thread.date */}
+                           <span>{formatDate(thread.latestEmailDate || thread.date)}</span>
                      </div>
                      {hasAttachments && (
                         <div className='flex items-center'>
